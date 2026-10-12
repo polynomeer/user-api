@@ -161,9 +161,13 @@ user-api:
 | 없는 ID | Service | `UserNotFoundException` | 404 `USER_NOT_FOUND` |
 | 경로/쿼리 타입 불일치 | Spring | `MethodArgumentTypeMismatchException` | 400 `INVALID_PARAMETER` |
 | 필수 파라미터 누락 | Spring | `MissingServletRequestParameterException` | 400 `INVALID_PARAMETER` |
-| page/size/name 범위 위반 | Validation | `HandlerMethodValidationException` / `ConstraintViolationException` | 400 `INVALID_PARAMETER` |
-| 없는 경로 | Spring | `NoResourceFoundException` | 404 |
+| page/size/name 범위 위반 | Validation | `HandlerMethodValidationException` (Spring 6.1+ 내장 메서드 검증. 메시지는 컨트롤러 제약 선언에 한글로 정의) | 400 `INVALID_PARAMETER` |
+| 없는 경로 | Spring | `NoResourceFoundException` | 404 `NOT_FOUND` |
+| 지원하지 않는 메서드 | Spring | `HttpRequestMethodNotSupportedException` | 405 `METHOD_NOT_ALLOWED` |
+| 그 외 스프링 표준 예외 (415, 406 등) | Spring | `ResponseEntityExceptionHandler` 기본 처리 + `code`에 상태 이름 | 4xx `<HttpStatus 이름>` |
 | 그 외 | - | ERROR 로그(스택트레이스), 내부 메시지 미노출 | 500 `INTERNAL_ERROR` |
+
+> 구현: `GlobalExceptionHandler`가 `ResponseEntityExceptionHandler`를 상속해 스프링 표준 예외의 상태 코드 결정은 위임하고, 한글 `detail`과 `code`만 채운다.
 
 ## 7. 의도적으로 하지 않은 것 (범위 밖)
 

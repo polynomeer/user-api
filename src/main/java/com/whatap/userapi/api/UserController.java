@@ -23,6 +23,9 @@ public class UserController {
 	private static final String DEFAULT_SIZE = "10";
 	private static final int MAX_SIZE = 100;
 
+	private static final String PAGE_MESSAGE = "page는 0 이상이어야 합니다.";
+	private static final String SIZE_MESSAGE = "size는 1 이상 " + MAX_SIZE + " 이하여야 합니다.";
+
 	private final UserService userService;
 
 	public UserController(UserService userService) {
@@ -31,8 +34,9 @@ public class UserController {
 
 	@GetMapping
 	public PageResponse<User> findAll(
-			@RequestParam(defaultValue = DEFAULT_PAGE) @Min(0) int page,
-			@RequestParam(defaultValue = DEFAULT_SIZE) @Min(1) @Max(MAX_SIZE) int size) {
+			@RequestParam(defaultValue = DEFAULT_PAGE) @Min(value = 0, message = PAGE_MESSAGE) int page,
+			@RequestParam(defaultValue = DEFAULT_SIZE)
+			@Min(value = 1, message = SIZE_MESSAGE) @Max(value = MAX_SIZE, message = SIZE_MESSAGE) int size) {
 		return userService.findAll(page, size);
 	}
 
@@ -43,9 +47,10 @@ public class UserController {
 
 	@GetMapping("/search")
 	public PageResponse<User> searchByName(
-			@RequestParam @NotBlank String name,
-			@RequestParam(defaultValue = DEFAULT_PAGE) @Min(0) int page,
-			@RequestParam(defaultValue = DEFAULT_SIZE) @Min(1) @Max(MAX_SIZE) int size) {
+			@RequestParam @NotBlank(message = "name은 공백일 수 없습니다.") String name,
+			@RequestParam(defaultValue = DEFAULT_PAGE) @Min(value = 0, message = PAGE_MESSAGE) int page,
+			@RequestParam(defaultValue = DEFAULT_SIZE)
+			@Min(value = 1, message = SIZE_MESSAGE) @Max(value = MAX_SIZE, message = SIZE_MESSAGE) int size) {
 		return userService.searchByName(name, page, size);
 	}
 
