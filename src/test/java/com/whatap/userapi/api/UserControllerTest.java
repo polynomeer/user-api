@@ -98,13 +98,13 @@ class UserControllerTest {
 	@Test
 	@DisplayName("API-4: ID로 단건 조회한다")
 	void findsById() throws Exception {
-		mockMvc.perform(get("/api/users/1018"))
+		mockMvc.perform(get("/api/users/1017"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(1018))
-				.andExpect(jsonPath("$.name").value("와탭랩스"))
-				.andExpect(jsonPath("$.age").value(40))
+				.andExpect(jsonPath("$.id").value(1017))
+				.andExpect(jsonPath("$.name").value("치킨"))
+				.andExpect(jsonPath("$.age").value(39))
 				.andExpect(jsonPath("$.gender").value("M"))
-				.andExpect(jsonPath("$.salary").value(47_000_000));
+				.andExpect(jsonPath("$.salary").value(46_000_000));
 	}
 
 	@Test

@@ -1,6 +1,6 @@
 # user-api
 
-> 와탭랩스 JAVA 코딩테스트 — `user.txt`를 기동 시 메모리에 적재하고 **목록·단건·검색·파싱 실패 조회·재적재** REST API를 제공하는 Spring Boot 애플리케이션
+> JAVA 코딩테스트 과제 — `user.txt`를 기동 시 메모리에 적재하고 **목록·단건·검색·파싱 실패 조회·재적재** REST API를 제공하는 Spring Boot 애플리케이션
 
 ## 한눈에 보기
 
@@ -81,10 +81,10 @@ curl -s 'localhost:8080/api/users?page=0&size=2'
 
 **단건**
 ```bash
-curl -s localhost:8080/api/users/1018
+curl -s localhost:8080/api/users/1017
 ```
 ```json
-{"id": 1018, "name": "와탭랩스", "age": 40, "gender": "M", "salary": 47000000}
+{"id": 1017, "name": "치킨", "age": 39, "gender": "M", "salary": 46000000}
 ```
 
 **검색**
