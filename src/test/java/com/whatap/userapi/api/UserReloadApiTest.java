@@ -13,6 +13,8 @@ import java.nio.file.StandardCopyOption;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -94,5 +96,29 @@ class UserReloadApiTest {
 				.andExpect(jsonPath("$.totalElements").value(37));
 		mockMvc.perform(get("/api/users/parse-failures"))
 				.andExpect(jsonPath("$.count").value(3));
+	}
+
+	/**
+	 * 읽을 수만 있으면 0건도 유효한 결과로 보고 교체한다 (03-design 6.1, 07-tech-decisions 3.5).
+	 * 0건을 거부하는 가드를 넣기로 하면 이 테스트를 함께 바꾼다.
+	 */
+	@ParameterizedTest(name = "[{index}] {0}")
+	@DisplayName("R-6: 빈 파일이나 헤더만 있는 파일을 재적재하면 200과 함께 0건으로 교체된다")
+	@ValueSource(strings = {"", "ID , 이름 , 나이 , 성별 , 연봉\r\n=====\r\n"})
+	void replacesWithEmptyDataWhenFileHasNoRows(String content) throws Exception {
+		Files.writeString(DATA_FILE, content);
+
+		mockMvc.perform(post("/api/users/reload"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.successCount").value(0))
+				.andExpect(jsonPath("$.failureCount").value(0));
+
+		mockMvc.perform(get("/api/users"))
+				.andExpect(jsonPath("$.totalElements").value(0));
+		mockMvc.perform(get("/api/users/1001"))
+				.andExpect(status().isNotFound());
+		mockMvc.perform(get("/api/users/parse-failures"))
+				.andExpect(jsonPath("$.count").value(0))
+				.andExpect(jsonPath("$.loadedAt").isNotEmpty());
 	}
 }

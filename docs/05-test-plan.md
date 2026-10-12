@@ -1,5 +1,7 @@
 # 05. 테스트 계획
 
+> 단계별 계획과 보강 이력을 담는다. 현재 존재하는 테스트 전체 목록과 요구사항 추적은 [`10-test-catalog.md`](10-test-catalog.md)를 본다.
+
 ## 1. 단위 테스트 — `UserLineParserTest` (스프링 없이)
 
 | # | 입력 | 기대 |
@@ -69,6 +71,7 @@ curl -s -X POST localhost:8080/api/users/reload | jq
 | R-3 | `PageResultTest` | 0건, 정확히 나누어떨어짐, 마지막 1건, size > 전체, 범위 밖 |
 | R-4 | `UserSnapshotTest` | 파일 순서와 무관한 ID 정렬, 빈 스냅샷, 컬렉션 불변 |
 | R-5 | `UserFileLoaderTest#logsParseFailures` | FR-3: 실패 행마다 WARN 로그(행 번호·코드·원본), INFO 요약 로그 |
+| R-6 | `UserReloadApiTest#replacesWithEmptyDataWhenFileHasNoRows` | 03-design 6.1 (1): 빈 파일·헤더만 있는 파일 재적재 → 200, 0건으로 교체, `loadedAt` 갱신 (예외 처리 설계 리뷰에서 정한 정책을 고정) |
 
 - R-1 뮤테이션 확인: `findAll`이 스냅샷을 두 번 읽도록 고의로 바꾸면 3회 모두 실패 → 테스트가 실제로 결함을 검출함
 - R-1 안정성: 10회 반복 실행 모두 통과

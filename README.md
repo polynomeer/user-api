@@ -10,7 +10,7 @@
 | 샘플 데이터 | **성공 37건 / 실패 3건** — 실패 행은 WARN 로그로 남기고 API로 따로 조회할 수 있음 |
 | 에러 처리 | 모든 에러가 같은 형식(`ProblemDetail` + `code` + 한글 `detail`). 재적재가 실패해도 **기존 데이터 유지** |
 | 동시성 | 재적재 중 조회해도 **반쯤 갱신된 데이터가 보이지 않음** (불변 스냅샷 통째 교체) |
-| 테스트 | **89건 통과**, 라인 커버리지 99% (195/197), 분기 89% (50/56) |
+| 테스트 | **91건 통과**, 라인 커버리지 99% (195/197), 분기 89% (50/56) |
 | 환경 | JDK 21, Spring Boot 4.1.1 (Web MVC, Validation) — Gradle wrapper 포함 |
 
 ## 빠른 시작
@@ -18,7 +18,7 @@
 ```bash
 ./gradlew bootRun                                         # 실행 (작업 디렉터리의 ./user.txt 적재)
 curl -s 'localhost:8080/api/users?page=0&size=2'          # 목록 조회
-./gradlew test                                            # 테스트 89건
+./gradlew test                                            # 테스트 91건
 ```
 
 다른 위치의 데이터 파일을 쓰려면 환경변수로 경로를 바꾼다: `USER_API_DATA_FILE_PATH=/path/to/user.txt ./gradlew bootRun`
@@ -213,7 +213,7 @@ com.whatap.userapi
 ./gradlew test    # 리포트: build/reports/jacoco/test/html/index.html
 ```
 
-**89건 통과**, 라인 커버리지 99% (195/197), 분기 89% (50/56). 커버리지 수치보다 **아직 증명하지 않은 동작**을 기준으로 테스트를 보강했다. 테스트는 원본 `user.txt`를 수정하지 않고 임시 복사본을 사용한다.
+**91건 통과**, 라인 커버리지 99% (195/197), 분기 89% (50/56). 커버리지 수치보다 **아직 증명하지 않은 동작**을 기준으로 테스트를 보강했다. 테스트는 원본 `user.txt`를 수정하지 않고 임시 복사본을 사용한다.
 
 | 범주 | 테스트 (건수) | 무엇을 증명하나 |
 |---|---|---|
@@ -221,12 +221,12 @@ com.whatap.userapi
 | 적재 | `UserFileLoaderTest` (8) | 샘플 37/3건, 실패 WARN 로그, 헤더·빈 줄, 중복 ID, 파일 없음, CRLF·BOM, 비 UTF-8 |
 | API | `UserControllerTest` (14) | API 5종, 페이지 경계·전 페이지 순회, JSON 자료형, int 오버플로 |
 | 에러 | `ApiErrorResponseTest` (17) | 400/404/405/406/500 응답 형식, 내부 정보 비노출 |
-| 재적재 | `UserReloadApiTest` (2), `UserServiceReloadTest` (2) | 파일 변경 반영, 실패 시 500 + 기존 데이터 유지 |
+| 재적재 | `UserReloadApiTest` (4), `UserServiceReloadTest` (2) | 파일 변경 반영, 실패 시 500 + 기존 데이터 유지, 빈 파일은 0건으로 교체 |
 | 동시성 | `UserServiceConcurrencyTest` (1) | 재적재 200회 동안 4개 스레드가 조회해도 반쯤 갱신된 상태가 보이지 않음 (일부러 결함을 넣어 테스트가 잡아내는지 확인함) |
 | 통합 | `UserApiIntegrationTest` (4) | 실제 서버에서 HTTP로 기동 → 조회 → 변경 → 재적재 → 실패 → 복구 전체 흐름 |
 | 기타 | `UserDataStartupWithoutFileTest` (1), `PageResultTest` (7), `UserSnapshotTest` (3), `contextLoads` (1) | 파일 없이 기동, 페이징 경계, 정렬·불변성 |
 
-과제 API 5종 × 정상/경계/오류 커버리지 대조표: [docs/05-test-plan.md 7절](docs/05-test-plan.md)
+과제 API 5종 × 정상/경계/오류 커버리지 대조표: [docs/05-test-plan.md 7절](docs/05-test-plan.md) · 전체 테스트 목록과 요구사항 추적: [docs/10-test-catalog.md](docs/10-test-catalog.md)
 
 ## 진행 방식
 
@@ -271,4 +271,5 @@ git log --reverse --format='%h %s'    # 단계별 진행 이력
 | [07-tech-decisions](docs/07-tech-decisions.md) | 기술 선택 근거 (대안, 판단 기준, 재검토 조건) |
 | [08-process-log](docs/08-process-log.md) | 진행 기록, 회고 |
 | [09-ai-methodology](docs/09-ai-methodology.md) | AI 활용 방법론 |
+| [10-test-catalog](docs/10-test-catalog.md) | 테스트 전체 목록, 요구사항 추적, 테스트하지 않은 것 |
 | [AI_USAGE](docs/AI_USAGE.md) | 단계별 AI 활용 내역 |

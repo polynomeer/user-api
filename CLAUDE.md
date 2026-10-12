@@ -8,7 +8,7 @@ JAVA 코딩테스트(제한 90분). `user.txt`를 기동 시 메모리에 적재
 - 작업 순서·시간 배분: `docs/02-work-plan.md` — 현재 단계만 작업하고 범위를 넓히지 말 것
 - 설계(패키지, API 명세, 예외 매트릭스): `docs/03-design.md` — 구현은 이 문서를 따른다
 - 데이터 특이사항: `docs/04-data-analysis.md` (CRLF, 마지막 행 개행 없음, 오류 행 16·31·39)
-- 테스트 케이스: `docs/05-test-plan.md`
+- 테스트 케이스: `docs/05-test-plan.md` (계획·이력), `docs/10-test-catalog.md` (현재 전체 목록·요구사항 추적. 테스트 추가 시 갱신)
 - 기술 선택 근거: `docs/07-tech-decisions.md` (대안·판단 기준·재검토 조건)
 - 진행 기록: `docs/08-process-log.md` (단계별 타임라인·판단·AI 활용·회고)
 
