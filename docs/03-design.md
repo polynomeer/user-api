@@ -27,17 +27,18 @@ com.whatap.userapi
 │   ├── ParseFailure.java              # record(lineNumber, rawLine, errorCode, message)
 │   ├── ParseErrorCode.java            # enum
 │   ├── UserFileLoader.java            # 파일 → LoadResult (I/O, 중복검사, 로그)
-│   ├── LoadResult.java                # record(users, failures, loadedAt)
-│   └── UserDataInitializer.java       # ApplicationRunner: 기동 시 1회 적재
+│   └── LoadResult.java                # record(users, failures, loadedAt)
 ├── repository
 │   ├── UserSnapshot.java              # 불변 스냅샷(정렬 목록, ID 맵, 실패 목록, 적재 시각)
 │   └── UserRepository.java            # 스냅샷 보관/원자적 교체
 ├── service
-│   └── UserService.java               # 페이징·검색·재적재 유스케이스
+│   ├── UserService.java               # 페이징·검색·재적재 유스케이스
+│   └── PageResult.java                # 페이지 결과(content, page, size, totalElements, totalPages)
+├── startup
+│   └── UserDataInitializer.java       # ApplicationRunner: 기동 시 1회 적재
 ├── api
 │   ├── UserController.java
 │   └── dto
-│       ├── PageResponse.java
 │       ├── ParseFailuresResponse.java
 │       └── ReloadResponse.java
 └── exception
@@ -47,6 +48,8 @@ com.whatap.userapi
 ```
 
 **책임 분리 원칙**: 파싱(순수 로직) / 파일 I/O / 저장 / 유스케이스 / HTTP를 분리해 파서를 스프링 없이 단위 테스트한다.
+
+**의존 방향** (패키지 순환 없음): `api → service → loader·repository → domain`, `startup → service`. 기동 훅(`startup`)을 `loader`와 분리해 `loader ↔ service` 순환을 없앴고, 페이지 결과 타입을 `service`에 두어 서비스가 API DTO에 의존하지 않는다.
 
 ## 3. 데이터 흐름
 

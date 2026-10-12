@@ -132,7 +132,7 @@
 
 ## 4. API 설계
 
-### 4.1 페이징: 직접 구현한 `PageResponse`
+### 4.1 페이징: 직접 구현한 `PageResult` (구 `PageResponse`)
 
 - **선택**: 0 기반 page, 기본 size 10, 최대 100, ID 오름차순. 범위를 넘는 page는 에러가 아닌 빈 `content` (A-9, A-10)
 - **대안**: Spring Data `Pageable`/`Page`, 커서 기반 페이징

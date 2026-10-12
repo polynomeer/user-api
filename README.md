@@ -153,13 +153,14 @@ curl -s -X POST localhost:8080/api/users/reload
 
 ```
 com.whatap.userapi
-├── api            UserController, dto(PageResponse, ParseFailuresResponse, ReloadResponse)
+├── api            UserController, dto(ParseFailuresResponse, ReloadResponse)
 ├── config         UserDataProperties (user-api.data.file-path)
 ├── domain         User (record)
 ├── exception      GlobalExceptionHandler, UserNotFoundException, DataLoadException
-├── loader         UserLineParser, UserFileLoader, UserDataInitializer, ParseResult, ParseFailure, ParseErrorCode, LoadResult
+├── loader         UserLineParser, UserFileLoader, ParseResult, ParseFailure, ParseErrorCode, LoadResult
 ├── repository     UserRepository (AtomicReference), UserSnapshot (불변)
-└── service        UserService (조회·검색·재적재)
+├── service        UserService (조회·검색·재적재), PageResult
+└── startup        UserDataInitializer (기동 시 1회 적재)
 ```
 
 ## 테스트
@@ -179,7 +180,7 @@ com.whatap.userapi
 | `ApiErrorResponseTest` | 400/404/405/406/500 응답 형식과 내부 정보 비노출 |
 | `UserServiceConcurrencyTest` | 재적재 200회 동안 4개 스레드 조회 → 부분 갱신 비노출 (뮤테이션으로 검출력 확인, 한계는 테스트 계획 참고) |
 | `UserDataStartupWithoutFileTest` | 파일 없이 기동 시 빈 데이터 |
-| `PageResponseTest`, `UserSnapshotTest`, `UserServiceReloadTest` | 페이징 경계, 정렬·불변성, 재적재 교체·유지 |
+| `PageResultTest`, `UserSnapshotTest`, `UserServiceReloadTest` | 페이징 경계, 정렬·불변성, 재적재 교체·유지 |
 
 테스트는 원본 `user.txt`를 수정하지 않고 임시 복사본을 사용한다. 상세 계획: [docs/05-test-plan.md](docs/05-test-plan.md)
 

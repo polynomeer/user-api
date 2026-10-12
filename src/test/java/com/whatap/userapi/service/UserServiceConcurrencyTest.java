@@ -2,7 +2,6 @@ package com.whatap.userapi.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.whatap.userapi.api.dto.PageResponse;
 import com.whatap.userapi.config.UserDataProperties;
 import com.whatap.userapi.domain.User;
 import com.whatap.userapi.loader.UserFileLoader;
@@ -59,7 +58,7 @@ class UserServiceConcurrencyTest {
 				readers.add(executor.submit(() -> {
 					readersStarted.countDown();
 					while (running.get()) {
-						PageResponse<User> page = service.findAll(0, 100);
+						PageResult<User> page = service.findAll(0, 100);
 						observedTotals.add(page.totalElements());
 						checkConsistent(page, violations);
 					}
@@ -87,7 +86,7 @@ class UserServiceConcurrencyTest {
 	/**
 	 * 한 응답 안에서 total과 content가 같은 스냅샷에서 나왔는지, ID가 한 파일에서만 왔는지 확인한다.
 	 */
-	private static void checkConsistent(PageResponse<User> page, Set<String> violations) {
+	private static void checkConsistent(PageResult<User> page, Set<String> violations) {
 		long total = page.totalElements();
 		if (page.content().size() != total) {
 			violations.add("total=%d, content=%d".formatted(total, page.content().size()));

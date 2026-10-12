@@ -1,9 +1,9 @@
 package com.whatap.userapi.api;
 
-import com.whatap.userapi.api.dto.PageResponse;
 import com.whatap.userapi.api.dto.ParseFailuresResponse;
 import com.whatap.userapi.api.dto.ReloadResponse;
 import com.whatap.userapi.domain.User;
+import com.whatap.userapi.service.PageResult;
 import com.whatap.userapi.service.UserService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -33,7 +33,7 @@ public class UserController {
 	}
 
 	@GetMapping
-	public PageResponse<User> findAll(
+	public PageResult<User> findAll(
 			@RequestParam(defaultValue = DEFAULT_PAGE) @Min(value = 0, message = PAGE_MESSAGE) int page,
 			@RequestParam(defaultValue = DEFAULT_SIZE)
 			@Min(value = 1, message = SIZE_MESSAGE) @Max(value = MAX_SIZE, message = SIZE_MESSAGE) int size) {
@@ -46,7 +46,7 @@ public class UserController {
 	}
 
 	@GetMapping("/search")
-	public PageResponse<User> searchByName(
+	public PageResult<User> searchByName(
 			@RequestParam @NotBlank(message = "name은 공백일 수 없습니다.") String name,
 			@RequestParam(defaultValue = DEFAULT_PAGE) @Min(value = 0, message = PAGE_MESSAGE) int page,
 			@RequestParam(defaultValue = DEFAULT_SIZE)

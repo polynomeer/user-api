@@ -1,6 +1,5 @@
 package com.whatap.userapi.service;
 
-import com.whatap.userapi.api.dto.PageResponse;
 import com.whatap.userapi.config.UserDataProperties;
 import com.whatap.userapi.domain.User;
 import com.whatap.userapi.exception.DataLoadException;
@@ -28,8 +27,8 @@ public class UserService {
 
 	// 각 메서드는 스냅샷을 한 번만 읽어 그 안에서 처리한다 (재적재와 겹쳐도 total과 content가 어긋나지 않도록)
 
-	public PageResponse<User> findAll(int page, int size) {
-		return PageResponse.of(repository.current().usersSortedById(), page, size);
+	public PageResult<User> findAll(int page, int size) {
+		return PageResult.of(repository.current().usersSortedById(), page, size);
 	}
 
 	public User findById(int id) {
@@ -37,12 +36,12 @@ public class UserService {
 				.orElseThrow(() -> new UserNotFoundException(id));
 	}
 
-	public PageResponse<User> searchByName(String keyword, int page, int size) {
+	public PageResult<User> searchByName(String keyword, int page, int size) {
 		String trimmed = keyword.strip();
 		List<User> matched = repository.current().usersSortedById().stream()
 				.filter(user -> user.name().contains(trimmed))
 				.toList();
-		return PageResponse.of(matched, page, size);
+		return PageResult.of(matched, page, size);
 	}
 
 	public UserSnapshot currentSnapshot() {

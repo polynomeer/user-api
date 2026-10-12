@@ -1,4 +1,4 @@
-package com.whatap.userapi.loader;
+package com.whatap.userapi.startup;
 
 import com.whatap.userapi.exception.DataLoadException;
 import com.whatap.userapi.service.UserService;

@@ -1,4 +1,4 @@
-package com.whatap.userapi.api.dto;
+package com.whatap.userapi.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class PageResponseTest {
+class PageResultTest {
 
 	@DisplayName("페이지 경계에서 content 건수와 totalPages를 올바르게 계산한다")
 	@ParameterizedTest(name = "total={0}, page={1}, size={2} → content={3}, totalPages={4}")
@@ -24,7 +24,7 @@ class PageResponseTest {
 	void paginates(int total, int page, int size, int expectedContent, int expectedTotalPages) {
 		List<Integer> all = IntStream.range(0, total).boxed().toList();
 
-		PageResponse<Integer> response = PageResponse.of(all, page, size);
+		PageResult<Integer> response = PageResult.of(all, page, size);
 
 		assertThat(response.content()).hasSize(expectedContent);
 		assertThat(response.totalElements()).isEqualTo(total);
