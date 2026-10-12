@@ -86,3 +86,17 @@ MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 �
 
 - 원본 `user.txt`는 임시 디렉터리에 복사해 사용하며 수정하지 않는다
 - 테스트 클라이언트는 `spring-web`의 `RestClient`를 사용해 추가 의존성 없이 구성. `exchange`로 4xx/5xx도 예외 없이 상태·본문을 검증
+
+## 7. 과제 명세 "4. RestFul Api 구현 목록" 대비 커버리지
+
+과제 PDF의 API 5종을 기준으로 정상·경계·오류 케이스가 어느 테스트에서 검증되는지 대조한다. (`UC` = `UserControllerTest`, `AE` = `ApiErrorResponseTest`, `RA` = `UserReloadApiTest`, `IT` = `UserApiIntegrationTest`, `SW` = `UserDataStartupWithoutFileTest`)
+
+| 명세 API | 정상 | 경계·데이터 | 오류 |
+|---|---|---|---|
+| 전체 목록 페이지 조회 (JSON) | UC 기본 페이지, IT-1 실제 HTTP JSON | UC 마지막 페이지·범위 밖·오버플로, **UC 전 페이지 순회(누락·중복 없음)**, SW 빈 데이터 | AE page/size 범위·타입 오류 400 |
+| ID로 단건 조회 (JSON) | UC 5개 필드 값, **UC 필드 자료형(정수/문자열)** | UC 파싱 실패 ID(1016) 404 | UC·IT-3 없는 ID 404, AE·IT-3 숫자 아닌 ID 400 |
+| 이름 포함 문자열 검색 (JSON) | UC 부분 일치, IT-2 한글 URL 인코딩 | UC 공백 trim·페이징·결과 없음, **UC 실패 행 이름 미검색** | AE 검색어 누락·공백 400 |
+| 파싱 실패 데이터 조회 | UC 행 번호·원본·코드, **UC 3건 모두 코드·사유 메시지** | RA·IT-4 재적재 후 실패 목록 교체, SW 미적재 시 `loadedAt` null | - |
+| 파일 재읽기·메모리 갱신 | RA·IT-4 추가·삭제 반영, 응답 건수 | IT-4 실패 후 복구 재적재, R-1 재적재 중 조회 일관성 | RA·IT-4·SW 파일 없음 500 + 기존 데이터 유지, 경로 미노출 |
+
+굵게 표시한 항목은 이 대조 과정에서 빈틈으로 확인되어 추가한 테스트다.

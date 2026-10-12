@@ -1,7 +1,12 @@
 package com.whatap.userapi.api;
 
 import static org.hamcrest.Matchers.contains;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.blankOrNullString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,9 +16,13 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.jayway.jsonpath.JsonPath;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -146,5 +155,57 @@ class UserControllerTest {
 				.andExpect(jsonPath("$.failures[0].rawLine").value("1016 , 바사삭 , 38 , F , 45_OOO_000"))
 				.andExpect(jsonPath("$.failures[0].errorCode").value("INVALID_SALARY"))
 				.andExpect(jsonPath("$.failures[1].errorCode").value("INVALID_FIELD_COUNT"));
+	}
+
+	@Test
+	@DisplayName("목록: 모든 페이지를 순회하면 정상 37건이 중복·누락 없이 ID 오름차순으로 나온다")
+	void pagesCoverAllUsersWithoutGapOrDuplicate() throws Exception {
+		List<Integer> ids = new ArrayList<>();
+		for (int page = 0; page < 4; page++) {
+			String body = mockMvc.perform(get("/api/users").param("page", String.valueOf(page)).param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
+			ids.addAll(JsonPath.read(body, "$.content[*].id"));
+		}
+
+		List<Integer> expected = IntStream.rangeClosed(1001, 1040)
+				.filter(id -> id != 1016 && id != 1031 && id != 1039)
+				.boxed()
+				.toList();
+		assertThat(ids).containsExactlyElementsOf(expected);
+	}
+
+	@Test
+	@DisplayName("User JSON: ID·나이·연봉은 숫자, 이름·성별은 문자열이다 (과제의 User 클래스 자료형)")
+	void userJsonFieldTypesMatchSpec() throws Exception {
+		mockMvc.perform(get("/api/users/1001"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").isNumber())
+				.andExpect(jsonPath("$.age").isNumber())
+				.andExpect(jsonPath("$.salary").isNumber())
+				.andExpect(jsonPath("$.name").isString())
+				.andExpect(jsonPath("$.gender").isString());
+		mockMvc.perform(get("/api/users").param("size", "1"))
+				.andExpect(jsonPath("$.content[0].salary").isNumber())
+				.andExpect(jsonPath("$.content[0].gender").isString());
+	}
+
+	@Test
+	@DisplayName("검색: 파싱에 실패한 행의 이름(1016 바사삭)은 검색되지 않는다")
+	void searchExcludesFailedRows() throws Exception {
+		mockMvc.perform(get("/api/users/search").param("name", "바사삭"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(0));
+	}
+
+	@Test
+	@DisplayName("파싱 실패: 실패 행 3건(16·31·39) 각각의 에러 코드와 사유 메시지를 제공한다")
+	void parseFailuresHaveCodeAndMessageForEachRow() throws Exception {
+		mockMvc.perform(get("/api/users/parse-failures"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.failures[*].errorCode",
+						contains("INVALID_SALARY", "INVALID_FIELD_COUNT", "INVALID_SALARY")))
+				.andExpect(jsonPath("$.failures[*].message", everyItem(not(blankOrNullString()))))
+				.andExpect(jsonPath("$.failures[2].rawLine").value(containsString("AAA")));
 	}
 }
