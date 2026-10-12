@@ -30,7 +30,8 @@ com.whatap.userapi
 │   ├── LoadResult.java                # record(users, failures, loadedAt)
 │   └── UserDataInitializer.java       # ApplicationRunner: 기동 시 1회 적재
 ├── repository
-│   └── UserRepository.java            # 스냅샷 보관/원자적 교체/조회
+│   ├── UserSnapshot.java              # 불변 스냅샷(정렬 목록, ID 맵, 실패 목록, 적재 시각)
+│   └── UserRepository.java            # 스냅샷 보관/원자적 교체
 ├── service
 │   └── UserService.java               # 페이징·검색·재적재 유스케이스
 ├── api
@@ -86,8 +87,8 @@ com.whatap.userapi
 
 ### 4.3 저장소 (`UserRepository`)
 ```java
-private final AtomicReference<Snapshot> snapshot = new AtomicReference<>(Snapshot.empty());
-record Snapshot(Map<Integer, User> byId, List<User> sorted, List<ParseFailure> failures, Instant loadedAt) {}
+private final AtomicReference<UserSnapshot> snapshot = new AtomicReference<>(UserSnapshot.empty());
+record UserSnapshot(List<User> usersSortedById, Map<Integer, User> usersById, List<ParseFailure> failures, Instant loadedAt) {}
 ```
 - 스냅샷은 생성 시 `Map.copyOf`/`List.copyOf`로 **불변**. 조회는 락 없이 `snapshot.get()` 한 번만 읽고 그 스냅샷으로 끝까지 처리 → 재적재 중에도 일관된 결과 (NFR-3)
 - `UserService.reload()`는 `synchronized` (동시 재적재 직렬화, 파일 중복 읽기 방지)
