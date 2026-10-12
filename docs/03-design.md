@@ -173,3 +173,57 @@ user-api:
 
 - DB/JPA, 인증/인가, 파일 변경 자동 감지(WatchService) — 요구사항은 "API로 갱신". 시간이 남으면 확장 포인트로만 언급
 - Swagger — 시간 여유 시 README의 curl 예시로 대체
+
+## 8. 운영 확장 설계 (구현하지 않음)
+
+과제 범위에서는 2절의 계층형 구조로 충분하다. 실제 운영으로 가면 바뀌어야 할 지점과 목표 구조를 정리한다. **시간 제약상 코드에는 반영하지 않았다.**
+
+### 8.1 현재 구조의 한계
+
+| # | 한계 | 운영 시 문제 |
+|---|---|---|
+| 1 | `UserService`가 `UserFileLoader`(구체 클래스)에 직접 의존 | 데이터 출처가 S3·DB·외부 API로 바뀌면 서비스 수정 필요 |
+| 2 | `loader` 패키지에 순수 파싱(도메인 규칙)과 파일 I/O·`ApplicationRunner`(인프라)가 공존 | "파서는 스프링 비의존" 원칙이 패키지 경계로 드러나지 않음 |
+| 3 | 저장소가 단일 구현 클래스 | 다중 인스턴스·외부 캐시로 전환할 교체 지점이 없음 |
+| 4 | `POST /reload`에 인증 없음 | 누구나 재적재를 호출해 부하·장애 유발 가능 |
+| 5 | 인스턴스별 인메모리 적재 | 다중 인스턴스에서 reload가 한 대에만 반영 → 인스턴스 간 데이터 불일치 |
+| 6 | 헬스체크·메트릭 없음 (Actuator 제외) | 적재 실패·파싱 실패율을 모니터링할 수 없음 |
+
+### 8.2 목표 구조 (포트-어댑터)
+
+스프링 비의존 도메인을 중심에 두고, 데이터 출처와 저장소를 포트(인터페이스) 뒤로 숨긴다. 의존 방향은 `web`·`infrastructure` → `application` → `domain` 한 방향이다.
+
+```
+com.whatap.userapi
+├── domain                      # 순수 Java, 스프링 비의존
+│   ├── User, UserSnapshot
+│   └── parse/                  # UserLineParser, ParseResult, ParseFailure, ParseErrorCode
+├── application                 # 유스케이스 + 포트
+│   ├── UserQueryService        # 조회·검색·페이징
+│   ├── UserReloadService       # 재적재 (단일 실행 보장)
+│   └── port/
+│       ├── UserDataSource      # 원천 행 스트림 제공 → 파일/S3/HTTP 구현 교체
+│       └── UserSnapshotStore   # 스냅샷 보관 → 인메모리/외부 저장소 교체
+├── infrastructure              # 포트 구현(어댑터)
+│   ├── file/FileUserDataSource
+│   ├── memory/InMemorySnapshotStore   # AtomicReference 기반 (현 UserRepository)
+│   └── startup/UserDataInitializer
+└── web                         # HTTP 경계
+    ├── UserController
+    ├── AdminController         # /admin/reload (인증 대상 분리)
+    ├── dto/
+    └── error/GlobalExceptionHandler
+```
+
+현재 클래스와의 대응: `loader.UserLineParser` 등 → `domain.parse`, `UserFileLoader` → `FileUserDataSource` + 적재 로직은 `UserReloadService`, `UserRepository` → `InMemorySnapshotStore`, `UserService` → 조회/재적재 서비스로 분리.
+
+### 8.3 운영 확장 포인트
+
+| 관심사 | 방안 |
+|---|---|
+| 데이터 출처 교체 | `UserDataSource` 구현 추가만으로 대응. 유스케이스·파서 변경 없음 |
+| 다중 인스턴스 | (a) reload 이벤트를 메시지(Redis pub/sub 등)로 전 인스턴스에 전파하거나, (b) 공유 저장소 기반 `UserSnapshotStore`로 전환. 조회 빈도가 높고 데이터가 작으면 (a)가 유리 |
+| 보안 | reload를 `/admin` 경로로 분리하고 인증 적용. 재적재 진행 중 중복 요청은 대기 대신 409로 거절(`tryLock`) |
+| 관측성 | Actuator 헬스체크에 적재 상태(마지막 성공 시각, 실패 여부) 포함, `user_parse_failures`·`user_reload_duration` 메트릭 노출 |
+| 대용량 파일 | 현재도 줄 단위 스트리밍. 파일 크기·행 수 상한을 두고 초과 시 적재 실패로 처리해 메모리 보호 |
+| 자동 갱신 | 필요 시 WatchService 또는 주기 폴링(파일 수정 시각·해시 비교)으로 reload 트리거. 수동 API는 유지 |
