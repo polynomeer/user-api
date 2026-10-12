@@ -64,7 +64,7 @@ curl -s -X POST localhost:8080/api/users/reload | jq
 |---|---|---|
 | R-1 | `UserServiceConcurrencyTest` | NFR-3: 3건/50건 파일로 200회 재적재하는 동안 4개 스레드가 조회 → 한 응답 안에서 total과 content 일치, 두 파일 데이터 혼재 없음, 두 상태 모두 관측(조회가 재적재 사이사이에 실행됐음을 확인) |
 | R-2 | `UserDataStartupWithoutFileTest` | 요구사항 A-8: 파일 없이 기동 → 빈 목록, `loadedAt` 없음, 재적재 500 |
-| R-3 | `PageResponseTest` | 0건, 정확히 나누어떨어짐, 마지막 1건, size > 전체, 범위 밖 |
+| R-3 | `PageResultTest` | 0건, 정확히 나누어떨어짐, 마지막 1건, size > 전체, 범위 밖 |
 | R-4 | `UserSnapshotTest` | 파일 순서와 무관한 ID 정렬, 빈 스냅샷, 컬렉션 불변 |
 | R-5 | `UserFileLoaderTest#logsParseFailures` | FR-3: 실패 행마다 WARN 로그(행 번호·코드·원본), INFO 요약 로그 |
 
@@ -72,3 +72,17 @@ curl -s -X POST localhost:8080/api/users/reload | jq
 - R-1 안정성: 10회 반복 실행 모두 통과
 - R-1 한계: 조회 **도중**에 교체가 일어났음을 직접 증명하지는 않는다. 다만 리스트를 비우고 채우는 식의 부분 갱신이면 total이 3/50이 아닌 값으로 관측되어 실패한다
 - 커버리지 리포트: `./gradlew test` 후 `build/reports/jacoco/test/html/index.html`
+
+## 6. 통합 테스트 — `UserApiIntegrationTest` (`RANDOM_PORT` 실제 서버 + `RestClient`)
+
+MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 내장 서버를 띄워 HTTP로 호출해 다음을 확인한다: 컨테이너 라우팅, 한글 쿼리 파라미터 URL 인코딩, JSON 직렬화와 `Content-Type`, 그리고 전체 흐름(기동 → 조회 → 변경 → 재적재 → 실패 → 복구).
+
+| # | 테스트 | 검증 내용 |
+|---|---|---|
+| I-1 | `listsUsersOverHttp` | 기동 시 적재된 샘플 37건이 `application/json`으로 직렬화되어 조회됨 (첫 행 1001, 연봉 정수 변환) |
+| I-2 | `searchesByKoreanName` | 한글 검색어(`파이`)가 URL 인코딩되어 전달되고 부분 일치 2건 반환 |
+| I-3 | `returnsProblemDetailOverHttp` | 실제 서버에서 404·400·없는 경로 404·405가 `application/problem+json`과 `code`를 가짐 |
+| I-4 | `reloadLifecycle` | 기동 시 실패 3건(16·31·39) → 행 추가 후 재적재 38건 반영 → 파일 삭제 시 500 `DATA_LOAD_FAILED`, 응답에 경로 미노출, 기존 38건 유지 → 복구 후 재적재 37건 |
+
+- 원본 `user.txt`는 임시 디렉터리에 복사해 사용하며 수정하지 않는다
+- 테스트 클라이언트는 `spring-web`의 `RestClient`를 사용해 추가 의존성 없이 구성. `exchange`로 4xx/5xx도 예외 없이 상태·본문을 검증
