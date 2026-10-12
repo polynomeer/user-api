@@ -55,3 +55,18 @@ curl -s 'localhost:8080/api/users/search?name=%ED%8C%8C%EC%9D%B4' | jq   # name=
 curl -s localhost:8080/api/users/parse-failures | jq
 curl -s -X POST localhost:8080/api/users/reload | jq
 ```
+
+## 5. 보강 테스트 (7단계)
+
+커버리지(JaCoCo): 라인 191/193(99%), 분기 48/54. 미커버 분기는 도달 불가능한 방어 코드(나이 `< 0`은 숫자 패턴에서 이미 걸러짐 등)라 커버리지 수치보다 **아직 증명하지 않은 동작**을 기준으로 보강했다.
+
+| # | 테스트 | 검증 내용 |
+|---|---|---|
+| R-1 | `UserServiceConcurrencyTest` | NFR-3: 3건/50건 파일로 200회 재적재하는 동안 4개 스레드가 조회 → 한 응답 안에서 total과 content 일치, 두 파일 데이터 혼재 없음, 두 상태 모두 관측(실제 겹침 보장) |
+| R-2 | `UserDataStartupWithoutFileTest` | A-8: 파일 없이 기동 → 빈 목록, `loadedAt` 없음, 재적재 500 |
+| R-3 | `PageResponseTest` | 0건, 정확히 나누어떨어짐, 마지막 1건, size > 전체, 범위 밖 |
+| R-4 | `UserSnapshotTest` | 파일 순서와 무관한 ID 정렬, 빈 스냅샷, 컬렉션 불변 |
+
+- R-1 뮤테이션 확인: `findAll`이 스냅샷을 두 번 읽도록 고의로 바꾸면 3회 모두 실패 → 테스트가 실제로 결함을 검출함
+- R-1 안정성: 10회 반복 실행 모두 통과
+- 커버리지 리포트: `./gradlew test` 후 `build/reports/jacoco/test/html/index.html`
