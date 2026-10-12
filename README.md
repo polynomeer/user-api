@@ -200,7 +200,7 @@ git log --reverse --format='%h %s'
 
 ## AI 활용
 
-**Claude Code (Claude Opus 5.5)** 를 사용했다. 요구사항·데이터 분석, 설계 문서 초안, 테스트 케이스 도출, 코드 작성 보조, 단계별 명세 검증(서브에이전트)에 활용했고, 모든 산출물은 검토 후 반영했다. 단계별 기록: [docs/AI_USAGE.md](docs/AI_USAGE.md)
+**Claude Code (Claude Opus 5.5)** 를 사용했다. 요구사항·데이터 분석, 설계 문서 초안, 테스트 케이스 도출, 코드 작성 보조, 단계별 명세 검증(서브에이전트)에 활용했고, 모든 산출물은 검토 후 반영했다. 단계별 기록: [docs/AI_USAGE.md](docs/AI_USAGE.md), 방법론(명세·하네스·검증 체계, AI가 틀린 사례와 교정): [docs/09-ai-methodology.md](docs/09-ai-methodology.md)
 
 ## 문서
 
@@ -213,3 +213,4 @@ git log --reverse --format='%h %s'
 | [05-test-plan](docs/05-test-plan.md) | 테스트 계획, 보강 테스트 |
 | [06-commit-convention](docs/06-commit-convention.md) | 커밋 규칙 |
 | [AI_USAGE](docs/AI_USAGE.md) | AI 활용 내역 |
+| [09-ai-methodology](docs/09-ai-methodology.md) | AI 활용 방법론 |
