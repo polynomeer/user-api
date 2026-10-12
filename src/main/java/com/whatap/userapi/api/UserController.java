@@ -2,6 +2,7 @@ package com.whatap.userapi.api;
 
 import com.whatap.userapi.api.dto.PageResponse;
 import com.whatap.userapi.api.dto.ParseFailuresResponse;
+import com.whatap.userapi.api.dto.ReloadResponse;
 import com.whatap.userapi.domain.User;
 import com.whatap.userapi.service.UserService;
 import jakarta.validation.constraints.Max;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,5 +52,10 @@ public class UserController {
 	@GetMapping("/parse-failures")
 	public ParseFailuresResponse findParseFailures() {
 		return ParseFailuresResponse.from(userService.currentSnapshot());
+	}
+
+	@PostMapping("/reload")
+	public ReloadResponse reload() {
+		return ReloadResponse.from(userService.reload());
 	}
 }
