@@ -38,6 +38,7 @@ com.whatap.userapi
 │   ├── UserController.java
 │   └── dto
 │       ├── PageResponse.java
+│       ├── ParseFailuresResponse.java
 │       └── ReloadResponse.java
 └── exception
     ├── UserNotFoundException.java

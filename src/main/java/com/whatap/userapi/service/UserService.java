@@ -1,12 +1,16 @@
 package com.whatap.userapi.service;
 
+import com.whatap.userapi.api.dto.PageResponse;
 import com.whatap.userapi.config.UserDataProperties;
+import com.whatap.userapi.domain.User;
 import com.whatap.userapi.exception.DataLoadException;
+import com.whatap.userapi.exception.UserNotFoundException;
 import com.whatap.userapi.loader.LoadResult;
 import com.whatap.userapi.loader.UserFileLoader;
 import com.whatap.userapi.repository.UserRepository;
 import com.whatap.userapi.repository.UserSnapshot;
 import java.nio.file.Path;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,6 +24,29 @@ public class UserService {
 		this.loader = loader;
 		this.repository = repository;
 		this.dataFile = Path.of(properties.filePath());
+	}
+
+	// 각 메서드는 스냅샷을 한 번만 읽어 그 안에서 처리한다 (재적재와 겹쳐도 total과 content가 어긋나지 않도록)
+
+	public PageResponse<User> findAll(int page, int size) {
+		return PageResponse.of(repository.current().usersSortedById(), page, size);
+	}
+
+	public User findById(int id) {
+		return repository.current().findById(id)
+				.orElseThrow(() -> new UserNotFoundException(id));
+	}
+
+	public PageResponse<User> searchByName(String keyword, int page, int size) {
+		String trimmed = keyword.strip();
+		List<User> matched = repository.current().usersSortedById().stream()
+				.filter(user -> user.name().contains(trimmed))
+				.toList();
+		return PageResponse.of(matched, page, size);
+	}
+
+	public UserSnapshot currentSnapshot() {
+		return repository.current();
 	}
 
 	/**
