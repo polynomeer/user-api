@@ -12,6 +12,10 @@
 
 - AI 산출물은 직접 검토·수정 후 반영하며, 설계 결정의 최종 판단은 본인이 한다
 - AI가 참여한 커밋에는 `Co-Authored-By` 트레일러를 남겨 이력을 투명하게 한다
+- 규칙을 프롬프트가 아닌 하네스로 강제한다 (`.claude/`)
+  - `settings.json`: `user.txt` 수정 차단(deny), 응답 종료 시 소스 변경이 있으면 `./gradlew test` 실행·실패 시 종료 차단(Stop 훅)
+  - 서브에이전트: `spec-reviewer`(요구사항·설계 대조), `test-planner`(테스트 계획 누락 탐지), `submit-checker`(제출 체크리스트 실행) — 모두 읽기 전용 검증 역할
+  - 스킬: `/step N`(단계 구현→검증→커밋 절차 고정), `/checklist`(제출 전 점검)
 
 ## 단계별 기록
 
