@@ -153,10 +153,10 @@ curl -s -X POST localhost:8080/api/users/reload
 
 ```
 com.whatap.userapi
-├── api            UserController, dto(ParseFailuresResponse, ReloadResponse)
+├── api            UserController, dto(ParseFailuresResponse, ReloadResponse), error(GlobalExceptionHandler)
 ├── config         UserDataProperties (user-api.data.file-path)
 ├── domain         User (record)
-├── exception      GlobalExceptionHandler, UserNotFoundException, DataLoadException
+├── exception      UserNotFoundException, DataLoadException (계층 공통 예외)
 ├── loader         UserLineParser, UserFileLoader, ParseResult, ParseFailure, ParseErrorCode, LoadResult
 ├── repository     UserRepository (AtomicReference), UserSnapshot (불변)
 ├── service        UserService (조회·검색·재적재), PageResult

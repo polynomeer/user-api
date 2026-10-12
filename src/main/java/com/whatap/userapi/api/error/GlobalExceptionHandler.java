@@ -1,5 +1,7 @@
-package com.whatap.userapi.exception;
+package com.whatap.userapi.api.error;
 
+import com.whatap.userapi.exception.DataLoadException;
+import com.whatap.userapi.exception.UserNotFoundException;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -41,6 +43,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
 	 * 서버 파일 경로 등 내부 정보는 로그에만 남기고 응답에는 노출하지 않는다.
+	 * HTTP로 DataLoadException이 전파되는 경로는 재적재 API뿐이라는 전제로 "기존 데이터 유지"를 안내한다
+	 * (기동 시 실패는 UserDataInitializer가 직접 처리). 다른 경로에서 던지게 되면 문구를 함께 바꿔야 한다.
 	 */
 	@ExceptionHandler(DataLoadException.class)
 	public ProblemDetail handleDataLoad(DataLoadException e) {

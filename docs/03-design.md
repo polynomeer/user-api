@@ -38,18 +38,19 @@ com.whatap.userapi
 │   └── UserDataInitializer.java       # ApplicationRunner: 기동 시 1회 적재
 ├── api
 │   ├── UserController.java
-│   └── dto
-│       ├── ParseFailuresResponse.java
-│       └── ReloadResponse.java
-└── exception
-    ├── UserNotFoundException.java
-    ├── DataLoadException.java
-    └── GlobalExceptionHandler.java    # @RestControllerAdvice → ProblemDetail
+│   ├── dto
+│   │   ├── ParseFailuresResponse.java
+│   │   └── ReloadResponse.java
+│   └── error
+│       └── GlobalExceptionHandler.java  # @RestControllerAdvice → ProblemDetail (HTTP 경계)
+└── exception                          # 계층 공통 예외 (웹 의존 없음)
+    ├── UserNotFoundException.java     # service에서 던짐
+    └── DataLoadException.java         # loader에서 던짐
 ```
 
 **책임 분리 원칙**: 파싱(순수 로직) / 파일 I/O / 저장 / 유스케이스 / HTTP를 분리해 파서를 스프링 없이 단위 테스트한다.
 
-**의존 방향** (패키지 순환 없음): `api → service → loader·repository → domain`, `startup → service`. 기동 훅(`startup`)을 `loader`와 분리해 `loader ↔ service` 순환을 없앴고, 페이지 결과 타입을 `service`에 두어 서비스가 API DTO에 의존하지 않는다.
+**의존 방향** (패키지 순환 없음): `api → service → loader·repository → domain`, `startup → service`, `loader·service·api → exception`. 예외 타입은 웹 의존이 없는 `exception`에, HTTP 변환(`GlobalExceptionHandler`)은 `api.error`에 두어 인프라 계층(`loader`)이 웹 계층 클래스와 같은 패키지에 의존하지 않게 했다. 기동 훅(`startup`)을 `loader`와 분리해 `loader ↔ service` 순환을 없앴고, 페이지 결과 타입을 `service`에 두어 서비스가 API DTO에 의존하지 않는다.
 
 ## 3. 데이터 흐름
 
@@ -161,6 +162,8 @@ user-api:
 | 줄 파싱 실패 | Parser | Failure 수집 + WARN 로그, 적재 계속 | - |
 | 파일 없음/권한 없음/인코딩 오류 (기동 시) | Loader | ERROR 로그, 빈 데이터로 기동 (A-8) | - |
 | 파일 없음/읽기 실패 (재적재) | Loader | `DataLoadException`, 기존 스냅샷 유지 | 500 `DATA_LOAD_FAILED` |
+| 빈 파일·헤더만 있는 파일·쓰는 중인 파일 (재적재) | Loader | **예외 아님.** 읽은 결과(0건 또는 일부)로 스냅샷 교체 (6.1 참조) | 200 |
+| 기동 시 파일 외 예외 (파서 버그, 잘못된 `file-path` 등) | Initializer/Service | 잡지 않음 → **기동 실패** (fail-fast, 6.1 참조) | - |
 | 없는 ID | Service | `UserNotFoundException` | 404 `USER_NOT_FOUND` |
 | 경로/쿼리 타입 불일치 | Spring | `MethodArgumentTypeMismatchException` | 400 `INVALID_PARAMETER` |
 | 필수 파라미터 누락 | Spring | `MissingServletRequestParameterException` | 400 `INVALID_PARAMETER` |
@@ -171,6 +174,25 @@ user-api:
 | 그 외 | - | ERROR 로그(스택트레이스), 내부 메시지 미노출 | 500 `INTERNAL_ERROR` |
 
 > 구현: `GlobalExceptionHandler`가 `ResponseEntityExceptionHandler`를 상속해 스프링 표준 예외의 상태 코드 결정은 위임하고, 한글 `detail`과 `code`만 채운다.
+
+### 6.1 예외 처리 경계와 알려진 동작
+
+**(1) 재적재 실패의 기준은 "파일을 읽을 수 없음"뿐이다.** 빈 파일, 헤더만 있는 파일은 `IOException`이 아니므로 `success=0` 스냅샷으로 교체되고 200을 반환한다. 다른 프로세스가 파일을 쓰는 도중에 재적재하면 그 시점까지 쓰인 행만 적재된다.
+- 결정: 현재 동작 유지. "0건"이 유효한 데이터 상태일 수 있고, 행 수 하한 같은 정책은 요구사항에 근거가 없다. 응답의 `successCount`·`failureCount`로 결과를 바로 확인할 수 있다
+- 운영 시 보완: 파일은 임시 파일에 쓴 뒤 rename으로 원자적 교체한다(쓰기 측 규약). 필요하면 "성공 0건이면 교체 거부"(`EMPTY_DATA` 등) 가드 추가 (07 문서 3.5)
+
+**(2) 기동 시 빈 데이터로 계속 진행하는 것은 `DataLoadException`(파일 문제)만이다.** `UserDataInitializer`는 `DataLoadException`만 잡는다.
+- 파서·스냅샷 생성 중의 다른 `RuntimeException`은 코드 버그이므로 잡지 않고 기동을 실패시킨다. 버그를 빈 데이터로 덮어 조용히 서비스하지 않기 위함
+- 잘못된 `file-path`(`InvalidPathException`)는 `UserService` 생성 시점에 기동 실패. 설정 오류도 fail-fast
+
+**(3) 적재 실패 상태 노출.** 기동 시 적재에 실패하면 `/api/users`는 200 빈 목록이라 "0건"과 구별되지 않는다. 대신 `GET /api/users/parse-failures`의 `loadedAt`이 `null`이면 한 번도 적재에 성공하지 못한 상태다. 운영에서는 헬스체크로 노출한다 (8.3)
+
+**(4) `DATA_LOAD_FAILED`의 상태 코드는 500.** 원인(파일 없음·권한·인코딩)은 클라이언트 요청이 아닌 서버 측 문제이고, 일시적이라는 보장이 없다. 503은 "잠시 후 재시도"를 뜻하므로 재시도로 해결되지 않는 설정 오류에는 맞지 않는다. 또 핸들러는 `DataLoadException`이 HTTP로 전파되는 경로가 재적재뿐이라는 전제로 "기존 데이터 유지"를 안내한다. 다른 경로에서 던지게 되면 문구를 바꿔야 한다
+
+**(5) 알려진 사소한 동작 (변경하지 않음)**
+- `GET /api/users/reload`는 405가 아니라 400 `INVALID_PARAMETER`다. GET 매핑 `/{id}`에 매칭되어 `id='reload'` 타입 불일치가 되기 때문이다. 재적재를 `/admin` 경로로 분리하면 해소된다 (8.3)
+- `DispatcherServlet` 밖(서블릿 필터 등)에서 난 오류는 Spring Boot 기본 `/error` 응답 형식이다. 현재 커스텀 필터가 없어 해당 사항이 없다
+- `UserNotFoundException`은 404마다 스택트레이스를 생성한다. 요청량에 비해 비용이 무시할 수준이라 최적화하지 않는다
 
 ## 7. 의도적으로 하지 않은 것 (범위 밖)
 
