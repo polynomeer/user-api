@@ -129,7 +129,7 @@ curl -s -X POST localhost:8080/api/users/reload
 | 연봉 | `30000000` 또는 `30_000_000` (`_`는 3자리 단위만), int 범위 | `INVALID_SALARY` |
 | (파일) ID 중복 | 먼저 나온 행 유지, 이후 행 실패 | `DUPLICATE_ID` |
 
-- 빈 줄, 헤더(`ID , 이름 , ...`), 구분선(`====`)은 실패가 아닌 건너뛰기
+- 빈 줄, 구분선(`====`), 첫 데이터 행 이전의 헤더(`ID , 이름 , ...`)는 실패가 아닌 건너뛰기. 데이터 행 이후에 `ID ,`로 시작하는 행은 `INVALID_ID` 실패
 - CRLF/LF 혼재, 마지막 행 개행 없음, 파일 선두 BOM 처리
 - 샘플 데이터 결과: **성공 37건, 실패 3건** (16행 연봉의 영문 `O`, 31행 빈 필드, 39행 연봉의 `AAA`)
 
@@ -168,12 +168,12 @@ com.whatap.userapi
 ./gradlew test
 ```
 
-80건, 라인 커버리지 99% (191/193). 리포트: `build/reports/jacoco/test/html/index.html`
+81건, 라인 커버리지 99%. 리포트: `build/reports/jacoco/test/html/index.html`
 
 | 테스트 | 범위 |
 |---|---|
 | `UserLineParserTest` | 정상 행, 오류 행 3종, 필드별 경계값 (29건) |
-| `UserFileLoaderTest` | 샘플 파일 37/3건, 파싱 실패 WARN 로그, 헤더·빈 줄, 중복 ID, 파일 없음, CRLF·BOM, 비 UTF-8 |
+| `UserFileLoaderTest` | 샘플 파일 37/3건, 파싱 실패 WARN 로그, 헤더·빈 줄, 데이터 이후 헤더형 행 실패, 중복 ID, 파일 없음, CRLF·BOM, 비 UTF-8 |
 | `UserControllerTest` | 목록·단건·검색·파싱 실패 API, 페이지 경계, int 오버플로 |
 | `UserReloadApiTest` | 파일 변경 후 재적재 반영, 실패 시 500 + 기존 데이터 유지 |
 | `ApiErrorResponseTest` | 400/404/405/406/500 응답 형식과 내부 정보 비노출 |

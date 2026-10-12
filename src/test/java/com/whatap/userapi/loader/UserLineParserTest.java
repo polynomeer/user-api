@@ -40,7 +40,7 @@ class UserLineParserTest {
 	@Test
 	@DisplayName("BOM으로 시작하는 행도 정상 파싱한다")
 	void parsesLineWithBom() {
-		ParseResult result = parser.parse(1, "﻿1001 , 김다나 , 23 , M , 30_000_000");
+		ParseResult result = parser.parse(1, "\uFEFF1001 , 김다나 , 23 , M , 30_000_000");
 
 		assertThat(result).isInstanceOf(ParseResult.Success.class);
 	}

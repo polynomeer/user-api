@@ -26,7 +26,8 @@ public class UserFileLoader {
 
 	private static final Logger log = LoggerFactory.getLogger(UserFileLoader.class);
 
-	// 과제 문서의 데이터 설명에 있는 헤더("ID , 이름 , ...")와 구분선("=====")
+	// 과제 문서의 데이터 설명에 있는 헤더("ID , 이름 , ...")와 구분선("=====").
+	// 헤더는 첫 데이터 행 이전에만 인정한다. 이후의 "id ,"로 시작하는 행은 ID가 깨진 데이터로 보고 실패 처리한다
 	private static final Pattern HEADER = Pattern.compile("^\\uFEFF?\\s*ID\\s*,.*", Pattern.CASE_INSENSITIVE);
 	private static final Pattern SEPARATOR = Pattern.compile("^\\uFEFF?\\s*=+\\s*$");
 
@@ -40,12 +41,14 @@ public class UserFileLoader {
 		// readLine은 \n, \r\n 모두를 줄 끝으로 처리한다. 잘못된 UTF-8 바이트는 MalformedInputException(IOException)
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			int lineNumber = 0;
+			boolean dataStarted = false;
 			String line;
 			while ((line = reader.readLine()) != null) {
 				lineNumber++;
-				if (isSkippable(line)) {
+				if (isSkippable(line, dataStarted)) {
 					continue;
 				}
+				dataStarted = true;
 				switch (parser.parse(lineNumber, line)) {
 					case ParseResult.Success(User user) -> {
 						if (seenIds.add(user.id())) {
@@ -69,7 +72,10 @@ public class UserFileLoader {
 		return new LoadResult(users, failures, Instant.now());
 	}
 
-	private static boolean isSkippable(String line) {
-		return line.isBlank() || HEADER.matcher(line).matches() || SEPARATOR.matcher(line).matches();
+	private static boolean isSkippable(String line, boolean dataStarted) {
+		if (line.isBlank() || SEPARATOR.matcher(line).matches()) {
+			return true;
+		}
+		return !dataStarted && HEADER.matcher(line).matches();
 	}
 }

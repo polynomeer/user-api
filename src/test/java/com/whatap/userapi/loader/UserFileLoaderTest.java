@@ -76,6 +76,24 @@ class UserFileLoaderTest {
 	}
 
 	@Test
+	@DisplayName("헤더는 첫 데이터 행 이전에만 인정하고, 이후의 'id ,'로 시작하는 행은 실패로 기록한다")
+	void treatsHeaderLikeLineAfterDataAsFailure() throws IOException {
+		Path file = write("""
+				ID , 이름 , 나이 , 성별 , 연봉
+				1001 , 김다나 , 23 , M , 30_000_000
+				id , 홍길동 , 20 , M , 1_000
+				""");
+
+		LoadResult result = loader.load(file);
+
+		assertThat(result.users()).extracting(User::id).containsExactly(1001);
+		assertThat(result.failures()).singleElement().satisfies(f -> {
+			assertThat(f.lineNumber()).isEqualTo(3);
+			assertThat(f.errorCode()).isEqualTo(ParseErrorCode.INVALID_ID);
+		});
+	}
+
+	@Test
 	@DisplayName("L-3: 중복 ID는 먼저 나온 행을 유지하고 이후 행을 DUPLICATE_ID로 기록한다")
 	void recordsDuplicateId() throws IOException {
 		Path file = write("""
@@ -103,7 +121,7 @@ class UserFileLoaderTest {
 	@Test
 	@DisplayName("L-5: CRLF/LF 혼재와 BOM이 있어도 정상 적재된다")
 	void handlesMixedLineEndingsAndBom() throws IOException {
-		Path file = write("﻿1001 , 김다나 , 23 , M , 30_000_000\r\n1002 , 김나나 , 24 , F , 31_000_000\n");
+		Path file = write("\uFEFF1001 , 김다나 , 23 , M , 30_000_000\r\n1002 , 김나나 , 24 , F , 31_000_000\n");
 
 		LoadResult result = loader.load(file);
 

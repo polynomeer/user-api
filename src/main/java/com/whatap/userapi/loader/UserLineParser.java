@@ -13,7 +13,7 @@ public class UserLineParser {
 
 	private static final String DELIMITER = ",";
 	private static final int FIELD_COUNT = 5;
-	private static final char BOM = '﻿';
+	private static final char BOM = '\uFEFF';
 
 	private static final int MIN_AGE = 0;
 	private static final int MAX_AGE = 150;
