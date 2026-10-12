@@ -7,7 +7,6 @@ import com.whatap.userapi.config.UserDataProperties;
 import com.whatap.userapi.domain.User;
 import com.whatap.userapi.loader.UserFileLoader;
 import com.whatap.userapi.repository.UserRepository;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -81,7 +80,7 @@ class UserServiceConcurrencyTest {
 		}
 
 		assertThat(violations).isEmpty();
-		// 두 상태가 모두 관측돼야 조회가 실제로 재적재와 겹쳐 실행됐다고 볼 수 있다
+		// 두 상태가 모두 관측돼야 조회가 재적재 사이사이에 실행됐다고 볼 수 있다 (한 번도 섞이지 않은 실행은 무의미)
 		assertThat(observedTotals).containsExactlyInAnyOrder(3L, 50L);
 	}
 

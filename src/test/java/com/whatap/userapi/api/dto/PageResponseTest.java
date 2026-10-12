@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class PageResponseTest {
 
+	@DisplayName("페이지 경계에서 content 건수와 totalPages를 올바르게 계산한다")
 	@ParameterizedTest(name = "total={0}, page={1}, size={2} → content={3}, totalPages={4}")
 	@CsvSource({
 			"0,  0, 10,  0, 0",   // 데이터 없음

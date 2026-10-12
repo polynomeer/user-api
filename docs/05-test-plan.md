@@ -62,11 +62,13 @@ curl -s -X POST localhost:8080/api/users/reload | jq
 
 | # | 테스트 | 검증 내용 |
 |---|---|---|
-| R-1 | `UserServiceConcurrencyTest` | NFR-3: 3건/50건 파일로 200회 재적재하는 동안 4개 스레드가 조회 → 한 응답 안에서 total과 content 일치, 두 파일 데이터 혼재 없음, 두 상태 모두 관측(실제 겹침 보장) |
-| R-2 | `UserDataStartupWithoutFileTest` | A-8: 파일 없이 기동 → 빈 목록, `loadedAt` 없음, 재적재 500 |
+| R-1 | `UserServiceConcurrencyTest` | NFR-3: 3건/50건 파일로 200회 재적재하는 동안 4개 스레드가 조회 → 한 응답 안에서 total과 content 일치, 두 파일 데이터 혼재 없음, 두 상태 모두 관측(조회가 재적재 사이사이에 실행됐음을 확인) |
+| R-2 | `UserDataStartupWithoutFileTest` | 요구사항 A-8: 파일 없이 기동 → 빈 목록, `loadedAt` 없음, 재적재 500 |
 | R-3 | `PageResponseTest` | 0건, 정확히 나누어떨어짐, 마지막 1건, size > 전체, 범위 밖 |
 | R-4 | `UserSnapshotTest` | 파일 순서와 무관한 ID 정렬, 빈 스냅샷, 컬렉션 불변 |
+| R-5 | `UserFileLoaderTest#logsParseFailures` | FR-3: 실패 행마다 WARN 로그(행 번호·코드·원본), INFO 요약 로그 |
 
 - R-1 뮤테이션 확인: `findAll`이 스냅샷을 두 번 읽도록 고의로 바꾸면 3회 모두 실패 → 테스트가 실제로 결함을 검출함
 - R-1 안정성: 10회 반복 실행 모두 통과
+- R-1 한계: 조회 **도중**에 교체가 일어났음을 직접 증명하지는 않는다. 다만 리스트를 비우고 채우는 식의 부분 갱신이면 total이 3/50이 아닌 값으로 관측되어 실패한다
 - 커버리지 리포트: `./gradlew test` 후 `build/reports/jacoco/test/html/index.html`

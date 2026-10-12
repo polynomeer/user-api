@@ -12,8 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
+@ExtendWith(OutputCaptureExtension.class)
 class UserFileLoaderTest {
 
 	private final UserFileLoader loader = new UserFileLoader();
@@ -36,6 +40,21 @@ class UserFileLoaderTest {
 						tuple(31, ParseErrorCode.INVALID_FIELD_COUNT),
 						tuple(39, ParseErrorCode.INVALID_SALARY));
 		assertThat(result.users()).last().isEqualTo(new User(1040, "오뚜기", 62, "M", 69_000_000));
+	}
+
+	@Test
+	@DisplayName("FR-3: 파싱 실패 행마다 행 번호·에러 코드·원본을 WARN 로그로 남기고, 적재 요약을 INFO로 남긴다")
+	void logsParseFailures(CapturedOutput output) throws IOException {
+		Path file = Files.copy(Path.of("user.txt"), tempDir.resolve("user.txt"));
+
+		loader.load(file);
+
+		assertThat(output.getOut())
+				.contains("user.txt 파싱 실패 - line=16, code=INVALID_SALARY")
+				.contains("raw='1016 , 바사삭 , 38 , F , 45_OOO_000'")
+				.contains("user.txt 파싱 실패 - line=31, code=INVALID_FIELD_COUNT")
+				.contains("user.txt 파싱 실패 - line=39, code=INVALID_SALARY")
+				.contains("success=37, failure=3");
 	}
 
 	@Test
