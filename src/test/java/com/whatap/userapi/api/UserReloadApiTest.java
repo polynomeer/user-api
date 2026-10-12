@@ -52,7 +52,7 @@ class UserReloadApiTest {
 	}
 
 	@Test
-	@DisplayName("A-11: 파일 변경 후 재적재하면 건수와 조회 결과에 반영된다")
+	@DisplayName("API-11: 파일 변경 후 재적재하면 건수와 조회 결과에 반영된다")
 	void reloadsChangedFile() throws Exception {
 		Files.writeString(DATA_FILE, """
 				2001 , 신규 , 30 , F , 50_000_000
@@ -80,7 +80,7 @@ class UserReloadApiTest {
 	}
 
 	@Test
-	@DisplayName("A-12: 파일을 읽지 못하면 500 DATA_LOAD_FAILED를 반환하고 기존 데이터를 유지한다")
+	@DisplayName("API-12: 파일을 읽지 못하면 500 DATA_LOAD_FAILED를 반환하고 기존 데이터를 유지한다")
 	void keepsPreviousDataWhenReloadFails() throws Exception {
 		Files.delete(DATA_FILE);
 

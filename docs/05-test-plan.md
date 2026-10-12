@@ -31,20 +31,22 @@
 
 ## 3. API 테스트 — `UserControllerTest` (`@SpringBootTest` + MockMvc, 테스트용 파일 경로 주입)
 
+> 번호는 `API-n`. 요구사항 문서의 가정 번호(`A-n`)와 겹치지 않도록 구분한다.
+
 | # | 요청 | 기대 |
 |---|---|---|
-| A-1 | `GET /api/users` | 200, size 10, totalElements 37, 첫 id 1001 |
-| A-2 | `GET /api/users?page=100` | 200, 빈 content |
-| A-3 | `GET /api/users?size=0` / `size=101` / `page=-1` / `page=abc` | 400 `INVALID_PARAMETER` |
-| A-4 | `GET /api/users/1001` | 200, name 김다나 |
-| A-5 | `GET /api/users/1016` (파싱 실패 행) | 404 |
-| A-6 | `GET /api/users/abc` | 400 |
-| A-7 | `GET /api/users/search?name=파이` | 파이리, 파이추 |
-| A-8 | `GET /api/users/search?name=` / 파라미터 누락 | 400 |
-| A-9 | `GET /api/users/search?name=없는이름` | 200, 빈 content |
-| A-10 | `GET /api/users/parse-failures` | 3건, 행 번호 16·31·39 |
-| A-11 | 파일 수정 후 `POST /api/users/reload` | 200, 카운트 반영, 조회 결과 반영 |
-| A-12 | 파일 삭제 후 `POST /api/users/reload` | 500 `DATA_LOAD_FAILED`, 이후 조회는 기존 데이터 |
+| API-1 | `GET /api/users` | 200, size 10, totalElements 37, 첫 id 1001 |
+| API-2 | `GET /api/users?page=100` | 200, 빈 content |
+| API-3 | `GET /api/users?size=0` / `size=101` / `page=-1` / `page=abc` | 400 `INVALID_PARAMETER` |
+| API-4 | `GET /api/users/1001` | 200, name 김다나 |
+| API-5 | `GET /api/users/1016` (파싱 실패 행) | 404 |
+| API-6 | `GET /api/users/abc` | 400 |
+| API-7 | `GET /api/users/search?name=파이` | 파이리, 파이추 |
+| API-8 | `GET /api/users/search?name=` / 파라미터 누락 | 400 |
+| API-9 | `GET /api/users/search?name=없는이름` | 200, 빈 content |
+| API-10 | `GET /api/users/parse-failures` | 3건, 행 번호 16·31·39 |
+| API-11 | 파일 수정 후 `POST /api/users/reload` | 200, 카운트 반영, 조회 결과 반영 |
+| API-12 | 파일 삭제 후 `POST /api/users/reload` | 500 `DATA_LOAD_FAILED`, 이후 조회는 기존 데이터 |
 
 ## 4. 수동 확인 (curl)
 

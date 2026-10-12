@@ -39,7 +39,7 @@ class ApiErrorResponseTest {
 	UserService userService;
 
 	@ParameterizedTest(name = "[{index}] {0}")
-	@DisplayName("A-3: page/size 범위 위반은 400 INVALID_PARAMETER와 한글 사유를 반환한다")
+	@DisplayName("API-3: page/size 범위 위반은 400 INVALID_PARAMETER와 한글 사유를 반환한다")
 	@CsvSource(delimiter = '|', textBlock = """
 			/api/users?size=0                  | size는 1 이상 100 이하여야 합니다.
 			/api/users?size=101                | size는 1 이상 100 이하여야 합니다.
@@ -55,7 +55,7 @@ class ApiErrorResponseTest {
 	}
 
 	@ParameterizedTest(name = "[{index}] {0}")
-	@DisplayName("A-3, A-6: 숫자가 아닌 page/size/id는 400 INVALID_PARAMETER를 반환한다")
+	@DisplayName("API-3, API-6: 숫자가 아닌 page/size/id는 400 INVALID_PARAMETER를 반환한다")
 	@CsvSource(delimiter = '|', textBlock = """
 			/api/users?page=abc  | 파라미터 'page'의 값 'abc'가 올바른 형식이 아닙니다.
 			/api/users?size=1.5  | 파라미터 'size'의 값 '1.5'가 올바른 형식이 아닙니다.
@@ -70,7 +70,7 @@ class ApiErrorResponseTest {
 	}
 
 	@Test
-	@DisplayName("A-8: 검색어 파라미터가 없으면 400 INVALID_PARAMETER를 반환한다")
+	@DisplayName("API-8: 검색어 파라미터가 없으면 400 INVALID_PARAMETER를 반환한다")
 	void rejectsMissingName() throws Exception {
 		mockMvc.perform(get("/api/users/search"))
 				.andExpect(status().isBadRequest())
@@ -79,7 +79,7 @@ class ApiErrorResponseTest {
 	}
 
 	@ParameterizedTest
-	@DisplayName("A-8: 검색어가 비어 있거나 공백뿐이면 400 INVALID_PARAMETER를 반환한다")
+	@DisplayName("API-8: 검색어가 비어 있거나 공백뿐이면 400 INVALID_PARAMETER를 반환한다")
 	@CsvSource({"''", "'   '"})
 	void rejectsBlankName(String name) throws Exception {
 		mockMvc.perform(get("/api/users/search").param("name", name))

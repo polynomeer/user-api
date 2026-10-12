@@ -54,7 +54,7 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("A-1: 목록 조회는 기본 page=0, size=10으로 ID 오름차순 페이지를 반환한다")
+	@DisplayName("API-1: 목록 조회는 기본 page=0, size=10으로 ID 오름차순 페이지를 반환한다")
 	void listsFirstPageByDefault() throws Exception {
 		mockMvc.perform(get("/api/users"))
 				.andExpect(status().isOk())
@@ -79,7 +79,7 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("A-2: 범위를 넘는 페이지는 빈 content를 반환한다")
+	@DisplayName("API-2: 범위를 넘는 페이지는 빈 content를 반환한다")
 	void returnsEmptyContentWhenPageOutOfRange() throws Exception {
 		mockMvc.perform(get("/api/users").param("page", "100"))
 				.andExpect(status().isOk())
@@ -96,7 +96,7 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("A-4: ID로 단건 조회한다")
+	@DisplayName("API-4: ID로 단건 조회한다")
 	void findsById() throws Exception {
 		mockMvc.perform(get("/api/users/1018"))
 				.andExpect(status().isOk())
@@ -108,7 +108,7 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("A-5: 없는 ID(파싱 실패 행 포함)는 404와 USER_NOT_FOUND를 반환한다")
+	@DisplayName("API-5: 없는 ID(파싱 실패 행 포함)는 404와 USER_NOT_FOUND를 반환한다")
 	void returns404WhenUserNotFound() throws Exception {
 		mockMvc.perform(get("/api/users/1016"))
 				.andExpect(status().isNotFound())
@@ -117,7 +117,7 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("A-7: 이름에 포함된 문자열로 검색한다")
+	@DisplayName("API-7: 이름에 포함된 문자열로 검색한다")
 	void searchesByName() throws Exception {
 		mockMvc.perform(get("/api/users/search").param("name", "파이"))
 				.andExpect(status().isOk())
@@ -136,7 +136,7 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("A-9: 검색 결과가 없으면 빈 content를 반환한다")
+	@DisplayName("API-9: 검색 결과가 없으면 빈 content를 반환한다")
 	void returnsEmptyWhenNoMatch() throws Exception {
 		mockMvc.perform(get("/api/users/search").param("name", "없는이름"))
 				.andExpect(status().isOk())
@@ -145,7 +145,7 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("A-10: 파싱 실패 목록을 행 번호, 원본, 에러 코드와 함께 조회한다")
+	@DisplayName("API-10: 파싱 실패 목록을 행 번호, 원본, 에러 코드와 함께 조회한다")
 	void listsParseFailures() throws Exception {
 		mockMvc.perform(get("/api/users/parse-failures"))
 				.andExpect(status().isOk())
