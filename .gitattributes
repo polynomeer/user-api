@@ -1,0 +1,6 @@
+/gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary
+
+# 샘플 데이터의 CRLF 줄바꿈을 그대로 보존 (파서 검증 대상)
+user.txt -text

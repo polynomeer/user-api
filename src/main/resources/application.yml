@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: user-api
+
+user-api:
+  data:
+    # 실행 디렉터리 기준 경로. 환경변수 USER_API_DATA_FILE_PATH로 재정의 가능
+    file-path: ./user.txt

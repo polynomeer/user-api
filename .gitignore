@@ -16,3 +16,6 @@ build/
 # 과제 원본 자료 (공개 레포 업로드 금지)
 와탭랩스_*.pdf
 와탭랩스_*.png
+
+# Spring Initializr
+HELP.md

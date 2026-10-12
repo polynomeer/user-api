@@ -5,7 +5,7 @@
 | 항목 | 선택 | 이유 |
 |---|---|---|
 | Language | Java 21 | 로컬 JDK(Corretto 21). `record` 사용 |
-| Framework | Spring Boot 4.1.x (Web, Validation, Actuator) | 과제 요구. start.spring.io 기본 stable |
+| Framework | Spring Boot 4.1.1 (`starter-webmvc`, `starter-validation`) | 과제 요구. start.spring.io 기본 stable. Actuator는 생성 서버 오류로 제외(필수 아님) |
 | Build | Gradle (Groovy DSL, wrapper 포함) | |
 | Test | JUnit 5, AssertJ, MockMvc | |
 | 저장소 | 인메모리 (불변 스냅샷 + `AtomicReference`) | 과제가 힙 메모리 허용 |
