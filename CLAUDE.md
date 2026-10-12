@@ -10,6 +10,7 @@
 - 데이터 특이사항: `docs/04-data-analysis.md` (CRLF, 마지막 행 개행 없음, 오류 행 16·31·39)
 - 테스트 케이스: `docs/05-test-plan.md`
 - 기술 선택 근거: `docs/07-tech-decisions.md` (대안·판단 기준·재검토 조건)
+- 진행 기록: `docs/08-process-log.md` (단계별 타임라인·판단·AI 활용·회고)
 
 ## 명령어
 
