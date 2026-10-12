@@ -1,6 +1,6 @@
 # 05. 테스트 계획
 
-> 단계별 계획과 보강 이력을 담는다. 현재 존재하는 테스트 전체 목록과 요구사항 추적은 [`10-test-catalog.md`](10-test-catalog.md)를 본다.
+> 단계별 계획과 보강 이력을 담습니다. 현재 존재하는 테스트 전체 목록과 요구사항 추적은 [`10-test-catalog.md`](10-test-catalog.md)를 봅니다.
 
 ## 1. 단위 테스트 — `UserLineParserTest` (스프링 없이)
 
@@ -19,7 +19,7 @@
 | P-11 | 연봉 `1__000`, `_1000`, `1000_`, `9_999_999_999` | `INVALID_SALARY` |
 | P-12 | 연봉 `30000000` (구분자 없음) | Success |
 
-`@ParameterizedTest` + `@CsvSource`/`@MethodSource`로 묶는다.
+`@ParameterizedTest` + `@CsvSource`/`@MethodSource`로 묶습니다.
 
 ## 2. 로더 테스트 — `UserFileLoaderTest` (`@TempDir`)
 
@@ -33,7 +33,7 @@
 
 ## 3. API 테스트 — `UserControllerTest` (`@SpringBootTest` + MockMvc, 테스트용 파일 경로 주입)
 
-> 번호는 `API-n`. 요구사항 문서의 가정 번호(`A-n`)와 겹치지 않도록 구분한다.
+> 번호는 `API-n`. 요구사항 문서의 가정 번호(`A-n`)와 겹치지 않도록 구분합니다.
 
 | # | 요청 | 기대 |
 |---|---|---|
@@ -62,7 +62,7 @@ curl -s -X POST localhost:8080/api/users/reload | jq
 
 ## 5. 보강 테스트 (7단계)
 
-커버리지(JaCoCo): 라인 191/193(99%), 분기 48/54. 미커버 분기는 도달 불가능한 방어 코드(나이 `< 0`은 숫자 패턴에서 이미 걸러짐 등)라 커버리지 수치보다 **아직 증명하지 않은 동작**을 기준으로 보강했다.
+커버리지(JaCoCo): 라인 191/193(99%), 분기 48/54. 미커버 분기는 도달 불가능한 방어 코드(나이 `< 0`은 숫자 패턴에서 이미 걸러짐 등)라 커버리지 수치보다 **아직 증명하지 않은 동작**을 기준으로 보강했습니다.
 
 | # | 테스트 | 검증 내용 |
 |---|---|---|
@@ -75,12 +75,12 @@ curl -s -X POST localhost:8080/api/users/reload | jq
 
 - R-1 뮤테이션 확인: `findAll`이 스냅샷을 두 번 읽도록 고의로 바꾸면 3회 모두 실패 → 테스트가 실제로 결함을 검출함
 - R-1 안정성: 10회 반복 실행 모두 통과
-- R-1 한계: 조회 **도중**에 교체가 일어났음을 직접 증명하지는 않는다. 다만 리스트를 비우고 채우는 식의 부분 갱신이면 total이 3/50이 아닌 값으로 관측되어 실패한다
+- R-1 한계: 조회 **도중**에 교체가 일어났음을 직접 증명하지는 않습니다. 다만 리스트를 비우고 채우는 식의 부분 갱신이면 total이 3/50이 아닌 값으로 관측되어 실패합니다
 - 커버리지 리포트: `./gradlew test` 후 `build/reports/jacoco/test/html/index.html`
 
 ## 6. 통합 테스트 — `UserApiIntegrationTest` (`RANDOM_PORT` 실제 서버 + `RestClient`)
 
-MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 내장 서버를 띄워 HTTP로 호출해 다음을 확인한다: 컨테이너 라우팅, 한글 쿼리 파라미터 URL 인코딩, JSON 직렬화와 `Content-Type`, 그리고 전체 흐름(기동 → 조회 → 변경 → 재적재 → 실패 → 복구).
+MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 내장 서버를 띄워 HTTP로 호출해 다음을 확인합니다: 컨테이너 라우팅, 한글 쿼리 파라미터 URL 인코딩, JSON 직렬화와 `Content-Type`, 그리고 전체 흐름(기동 → 조회 → 변경 → 재적재 → 실패 → 복구).
 
 | # | 테스트 | 검증 내용 |
 |---|---|---|
@@ -89,12 +89,12 @@ MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 �
 | I-3 | `returnsProblemDetailOverHttp` | 실제 서버에서 404·400·없는 경로 404·405가 `application/problem+json`과 `code`를 가짐 |
 | I-4 | `reloadLifecycle` | 기동 시 실패 3건(16·31·39) → 행 추가 후 재적재 38건 반영 → 파일 삭제 시 500 `DATA_LOAD_FAILED`, 응답에 경로 미노출, 기존 38건 유지 → 복구 후 재적재 37건 |
 
-- 원본 `user.txt`는 임시 디렉터리에 복사해 사용하며 수정하지 않는다
+- 원본 `user.txt`는 임시 디렉터리에 복사해 사용하며 수정하지 않습니다
 - 테스트 클라이언트는 `spring-web`의 `RestClient`를 사용해 추가 의존성 없이 구성. `exchange`로 4xx/5xx도 예외 없이 상태·본문을 검증
 
 ## 7. 과제 명세 "4. RestFul Api 구현 목록" 대비 커버리지
 
-과제 PDF의 API 5종을 기준으로 정상·경계·오류 케이스가 어느 테스트에서 검증되는지 대조한다. (`UC` = `UserControllerTest`, `AE` = `ApiErrorResponseTest`, `RA` = `UserReloadApiTest`, `IT` = `UserApiIntegrationTest`, `SW` = `UserDataStartupWithoutFileTest`)
+과제 PDF의 API 5종을 기준으로 정상·경계·오류 케이스가 어느 테스트에서 검증되는지 대조합니다. (`UC` = `UserControllerTest`, `AE` = `ApiErrorResponseTest`, `RA` = `UserReloadApiTest`, `IT` = `UserApiIntegrationTest`, `SW` = `UserDataStartupWithoutFileTest`)
 
 | 명세 API | 정상 | 경계·데이터 | 오류 |
 |---|---|---|---|
@@ -104,4 +104,4 @@ MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 �
 | 파싱 실패 데이터 조회 | UC 행 번호·원본·코드, **UC 3건 모두 코드·사유 메시지** | RA·IT-4 재적재 후 실패 목록 교체, SW 미적재 시 `loadedAt` null | - |
 | 파일 재읽기·메모리 갱신 | RA·IT-4 추가·삭제 반영, 응답 건수 | IT-4 실패 후 복구 재적재, R-1 재적재 중 조회 일관성 | RA·IT-4·SW 파일 없음 500 + 기존 데이터 유지, 경로 미노출 |
 
-굵게 표시한 항목은 이 대조 과정에서 빈틈으로 확인되어 추가한 테스트다.
+굵게 표시한 항목은 이 대조 과정에서 빈틈으로 확인되어 추가한 테스트입니다.

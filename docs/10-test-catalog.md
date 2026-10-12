@@ -1,8 +1,8 @@
 # 10. 테스트 명세 (전체 목록)
 
-> 현재 저장소에 있는 **모든 테스트**를 클래스·메서드 단위로 정리한다.
-> [`05-test-plan.md`](05-test-plan.md)는 단계별로 세운 계획과 보강 이력이고, 이 문서는 그 결과 실제로 존재하는 테스트의 목록이다.
-> 계획 번호(P/L/API/R/I-x)가 붙은 테스트는 번호를 함께 적었다. 번호가 없는 테스트는 `클래스#메서드`로 식별한다.
+> 현재 저장소에 있는 **모든 테스트**를 클래스·메서드 단위로 정리합니다.
+> [`05-test-plan.md`](05-test-plan.md)는 단계별로 세운 계획과 보강 이력이고, 이 문서는 그 결과 실제로 존재하는 테스트의 목록입니다.
+> 계획 번호(P/L/API/R/I-x)가 붙은 테스트는 번호를 함께 적었습니다. 번호가 없는 테스트는 `클래스#메서드`로 식별합니다.
 
 ## 1. 요약
 
@@ -26,26 +26,26 @@
 | 기동 | `UserApiApplicationTests` (1) | `@SpringBootTest` | 전체 |
 
 계층마다 도구를 다르게 쓴 이유:
-- **파서·로더는 스프링 없이** 테스트한다. 오류 데이터 경우의 수가 가장 많은 곳이라 빠르게 많이 돌린다
-- **에러 응답 형식은 `@WebMvcTest` + 목**으로 테스트한다. 500처럼 실제 데이터로는 만들기 어려운 상황을 목으로 일으킨다
-- **API 동작은 실제 샘플 데이터로 `@SpringBootTest`** 를 띄워 테스트한다. 기동 시 적재(`ApplicationRunner`)부터 응답까지 실제 흐름을 탄다
-- **통합 테스트는 실제 서버**로 한다. MockMvc가 거치지 않는 서블릿 컨테이너 라우팅, 한글 URL 인코딩, `Content-Type` 협상을 확인한다
+- **파서·로더는 스프링 없이** 테스트합니다. 오류 데이터 경우의 수가 가장 많은 곳이라 빠르게 많이 돌립니다
+- **에러 응답 형식은 `@WebMvcTest` + 목**으로 테스트합니다. 500처럼 실제 데이터로는 만들기 어려운 상황을 목으로 일으킵니다
+- **API 동작은 실제 샘플 데이터로 `@SpringBootTest`** 를 띄워 테스트합니다. 기동 시 적재(`ApplicationRunner`)부터 응답까지 실제 흐름을 탑니다
+- **통합 테스트는 실제 서버**로 합니다. MockMvc가 거치지 않는 서블릿 컨테이너 라우팅, 한글 URL 인코딩, `Content-Type` 협상을 확인합니다
 
 ## 2. 공통 규칙
 
-- **원본 `user.txt`는 수정하지 않는다.** 파일을 읽는 테스트는 모두 임시 디렉터리 복사본을 쓴다
+- **원본 `user.txt`는 수정하지 않습니다.** 파일을 읽는 테스트는 모두 임시 디렉터리 복사본을 씁니다
   - 단위 테스트: JUnit `@TempDir`
-  - 스프링 테스트: `static` 임시 파일을 만들고 `@DynamicPropertySource`로 `user-api.data.file-path`에 주입. 기동 시 적재가 읽을 수 있도록 컨텍스트 생성 전에 파일을 준비한다
-  - 파일을 바꾸는 테스트(`UserReloadApiTest`, `UserApiIntegrationTest`)는 `@BeforeEach`에서 샘플로 되돌리고 재적재해, 테스트 순서에 영향을 받지 않는다
-- **`@DisplayName`은 한글로**, 무엇을 증명하는지 문장으로 쓴다. 계획 번호가 있으면 앞에 붙인다
-- **에러 응답은 `code`와 `detail` 문구까지 검증**한다. 상태 코드만 보면 응답 형식이 깨져도 통과하기 때문이다
-- 기대값은 샘플 데이터의 실제 값(37건, 실패 행 16·31·39, 1017 치킨 등)을 쓴다. 데이터 특이사항은 [`04-data-analysis.md`](04-data-analysis.md)
+  - 스프링 테스트: `static` 임시 파일을 만들고 `@DynamicPropertySource`로 `user-api.data.file-path`에 주입. 기동 시 적재가 읽을 수 있도록 컨텍스트 생성 전에 파일을 준비합니다
+  - 파일을 바꾸는 테스트(`UserReloadApiTest`, `UserApiIntegrationTest`)는 `@BeforeEach`에서 샘플로 되돌리고 재적재해, 테스트 순서에 영향을 받지 않습니다
+- **`@DisplayName`은 한글로**, 무엇을 증명하는지 문장으로 씁니다. 계획 번호가 있으면 앞에 붙입니다
+- **에러 응답은 `code`와 `detail` 문구까지 검증**합니다. 상태 코드만 보면 응답 형식이 깨져도 통과하기 때문입니다
+- 기대값은 샘플 데이터의 실제 값(37건, 실패 행 16·31·39, 1017 치킨 등)을 씁니다. 데이터 특이사항은 [`04-data-analysis.md`](04-data-analysis.md)
 
 ## 3. 클래스별 명세
 
 ### 3.1 `UserLineParserTest` — 한 줄 파싱 (29건)
 
-`UserLineParser.parse(lineNumber, rawLine)`가 `ParseResult.Success` 또는 `Failure`를 반환하는지 검증한다.
+`UserLineParser.parse(lineNumber, rawLine)`가 `ParseResult.Success` 또는 `Failure`를 반환하는지 검증합니다.
 
 | 메서드 | 계획 | 검증 내용 |
 |---|---|---|
@@ -78,7 +78,7 @@
 
 ### 3.2 `UserFileLoaderTest` — 파일 적재 (8건)
 
-`UserFileLoader.load(path)`가 파일 전체를 `LoadResult`로 만들고, 파일 자체를 못 읽으면 `DataLoadException`을 던지는지 검증한다.
+`UserFileLoader.load(path)`가 파일 전체를 `LoadResult`로 만들고, 파일 자체를 못 읽으면 `DataLoadException`을 던지는지 검증합니다.
 
 | 메서드 | 계획 | 검증 내용 |
 |---|---|---|
@@ -101,7 +101,7 @@
 
 ### 3.4 `PageResultTest` — 페이징 계산 (7건)
 
-`paginates` 하나를 7개 경계값으로 실행한다 (R-3). 각 케이스에서 content 건수, `totalElements`, `totalPages`, 첫 요소 위치를 확인한다.
+`paginates` 하나를 7개 경계값으로 실행합니다 (R-3). 각 케이스에서 content 건수, `totalElements`, `totalPages`, 첫 요소 위치를 확인합니다.
 
 | total | page | size | content | totalPages | 의도 |
 |---|---|---|---|---|---|
@@ -127,15 +127,15 @@
 | `readersNeverSeePartialState` | R-1 | NFR-3. 3건/50건 파일을 번갈아 200회 재적재하는 동안 조회 스레드 4개가 `findAll(0, 100)` 반복 |
 
 판정 기준:
-- 한 응답 안에서 `totalElements`와 `content` 건수가 같다 (같은 스냅샷에서 나왔음)
-- 한 응답의 ID가 한 파일에서만 왔다 (1xxx와 2xxx가 섞이지 않음)
-- 3건 상태와 50건 상태가 **둘 다 관측**됐다. 조회가 재적재 사이사이에 실제로 실행됐다는 뜻으로, 이것이 없으면 테스트가 아무것도 증명하지 못한 채 통과할 수 있다
+- 한 응답 안에서 `totalElements`와 `content` 건수가 같습니다 (같은 스냅샷에서 나왔음)
+- 한 응답의 ID가 한 파일에서만 왔습니다 (1xxx와 2xxx가 섞이지 않음)
+- 3건 상태와 50건 상태가 **둘 다 관측**됐습니다. 조회가 재적재 사이사이에 실제로 실행됐다는 뜻으로, 이것이 없으면 테스트가 아무것도 증명하지 못한 채 통과할 수 있습니다
 
-이 테스트가 결함을 실제로 잡는지 확인한 기록(일부러 결함을 넣어 보는 뮤테이션 확인)과 한계는 [`05-test-plan.md` 5절](05-test-plan.md)에 있다.
+이 테스트가 결함을 실제로 잡는지 확인한 기록(일부러 결함을 넣어 보는 뮤테이션 확인)과 한계는 [`05-test-plan.md` 5절](05-test-plan.md)에 있습니다.
 
 ### 3.7 `ApiErrorResponseTest` — 에러 응답 형식 (17건)
 
-`@WebMvcTest(UserController.class)` + `@MockitoBean UserService`. 모든 에러가 `ProblemDetail` + `code` + 한글 `detail`로 나오는지 검증한다.
+`@WebMvcTest(UserController.class)` + `@MockitoBean UserService`. 모든 에러가 `ProblemDetail` + `code` + 한글 `detail`로 나오는지 검증합니다.
 
 | 메서드 | 계획 | 요청 | 기대 |
 |---|---|---|---|
@@ -152,7 +152,7 @@
 
 ### 3.8 `UserControllerTest` — API 동작 (14건)
 
-`@SpringBootTest` + MockMvc. 샘플 데이터 복사본을 기동 시 적재한 상태에서 호출한다.
+`@SpringBootTest` + MockMvc. 샘플 데이터 복사본을 기동 시 적재한 상태에서 호출합니다.
 
 | 메서드 | 계획 | 요청 | 검증 내용 |
 |---|---|---|---|
@@ -173,13 +173,13 @@
 
 ### 3.9 `UserReloadApiTest` — 재적재 API (4건)
 
-`@BeforeEach`에서 데이터 파일을 샘플로 되돌리고 재적재한다.
+`@BeforeEach`에서 데이터 파일을 샘플로 되돌리고 재적재합니다.
 
 | 메서드 | 계획 | 검증 내용 |
 |---|---|---|
 | `reloadsChangedFile` | API-11 | 파일을 3행(정상 2, 성별 오류 1)으로 바꿔 재적재 → 응답 `successCount=2`, `failureCount=1`. 새 ID 조회 가능, 사라진 ID(1018)는 404, 목록·실패 목록 모두 새 파일 기준 |
 | `keepsPreviousDataWhenReloadFails` | API-12 | 파일 삭제 후 재적재 → 500 `DATA_LOAD_FAILED`, 고정 문구. 이후 조회는 기존 37건·실패 3건 유지 |
-| `replacesWithEmptyDataWhenFileHasNoRows` (2) | R-6 | 빈 파일, 헤더·구분선만 있는 파일을 재적재 → **200**, `successCount=0`·`failureCount=0`. 목록 0건, 1001은 404, `loadedAt`은 갱신됨. 0건도 유효한 결과로 교체한다는 정책(03 6.1 (1), 07 3.5)을 고정하는 테스트로, 0건 거부 가드를 넣으면 함께 바꾼다 |
+| `replacesWithEmptyDataWhenFileHasNoRows` (2) | R-6 | 빈 파일, 헤더·구분선만 있는 파일을 재적재 → **200**, `successCount=0`·`failureCount=0`. 목록 0건, 1001은 404, `loadedAt`은 갱신됨. 0건도 유효한 결과로 교체한다는 정책(03 6.1 (1), 07 3.5)을 고정하는 테스트로, 0건 거부 가드를 넣으면 함께 바꿉니다 |
 
 ### 3.10 `UserDataStartupWithoutFileTest` — 파일 없이 기동 (1건)
 
@@ -189,7 +189,7 @@
 
 ### 3.11 `UserApiIntegrationTest` — 실제 서버 통합 (4건)
 
-`RANDOM_PORT`로 내장 서버를 띄우고 `RestClient`로 호출한다. `exchange`를 써서 4xx/5xx도 예외 없이 상태와 본문을 검증한다.
+`RANDOM_PORT`로 내장 서버를 띄우고 `RestClient`로 호출합니다. `exchange`를 써서 4xx/5xx도 예외 없이 상태와 본문을 검증합니다.
 
 | 메서드 | 계획 | 검증 내용 |
 |---|---|---|
@@ -202,7 +202,7 @@
 
 | 메서드 | 검증 내용 |
 |---|---|
-| `contextLoads` | 기본 설정으로 애플리케이션 컨텍스트가 뜬다 (빈 구성 오류 검출) |
+| `contextLoads` | 기본 설정으로 애플리케이션 컨텍스트가 뜹니다 (빈 구성 오류 검출) |
 
 ## 4. 요구사항 추적
 
@@ -234,7 +234,7 @@
 
 ## 5. 테스트하지 않은 것
 
-설계 문서에 정해 둔 동작 중 테스트로 증명하지 않은 것과 그 이유다. 추가 여부를 정할 때의 참고용이다.
+설계 문서에 정해 둔 동작 중 테스트로 증명하지 않은 것과 그 이유입니다. 추가 여부를 정할 때의 참고용입니다.
 
 | 동작 | 근거 문서 | 테스트 없는 이유 | 추가 우선순위 |
 |---|---|---|---|
@@ -247,7 +247,7 @@
 
 ## 6. 테스트를 추가할 때
 
-- 어느 계층에서 증명할지 먼저 정한다. 데이터 경우의 수는 파서·로더 단위 테스트, 응답 형식은 `ApiErrorResponseTest`, 실제 데이터 흐름은 `UserControllerTest`, 컨테이너가 관여하는 동작만 통합 테스트
-- 같은 설정의 `@SpringBootTest`를 재사용한다. 프로퍼티가 다르면 스프링 컨텍스트가 새로 떠서 테스트 시간이 늘어난다 (현재 전체 컨텍스트 5종 + 웹 슬라이스 1종)
-- 파일을 바꾸는 테스트는 `@BeforeEach`에서 샘플로 되돌린다
-- 계획에 있는 케이스면 `05-test-plan.md`의 번호를 `@DisplayName` 앞에 붙이고, 이 문서의 해당 표에 행을 추가한다
+- 어느 계층에서 증명할지 먼저 정합니다. 데이터 경우의 수는 파서·로더 단위 테스트, 응답 형식은 `ApiErrorResponseTest`, 실제 데이터 흐름은 `UserControllerTest`, 컨테이너가 관여하는 동작만 통합 테스트
+- 같은 설정의 `@SpringBootTest`를 재사용합니다. 프로퍼티가 다르면 스프링 컨텍스트가 새로 떠서 테스트 시간이 늘어납니다 (현재 전체 컨텍스트 5종 + 웹 슬라이스 1종)
+- 파일을 바꾸는 테스트는 `@BeforeEach`에서 샘플로 되돌립니다
+- 계획에 있는 케이스면 `05-test-plan.md`의 번호를 `@DisplayName` 앞에 붙이고, 이 문서의 해당 표에 행을 추가합니다
