@@ -2,14 +2,14 @@
 
 > 현재 저장소에 있는 **모든 테스트**를 클래스·메서드 단위로 정리합니다.
 > [`05-test-plan.md`](05-test-plan.md)는 단계별로 세운 계획과 보강 이력이고, 이 문서는 그 결과 실제로 존재하는 테스트의 목록입니다.
-> 계획 번호(P/L/API/R/I-x)가 붙은 테스트는 번호를 함께 적었습니다. 번호가 없는 테스트는 `클래스#메서드`로 식별합니다.
+> 계획 번호(P/L/API/R/I/FE-x)가 붙은 테스트는 번호를 함께 적었습니다. 번호가 없는 테스트는 `클래스#메서드`로 식별합니다.
 
 ## 1. 요약
 
 | 항목 | 값 |
 |---|---|
-| 테스트 클래스 | 12개 |
-| 실행 건수 | **91건** (파라미터 케이스 포함) |
+| 테스트 클래스 | 13개 |
+| 실행 건수 | **97건** (파라미터 케이스 포함) |
 | 실행 | `./gradlew test` (커버리지 리포트: `build/reports/jacoco/test/html/index.html`) |
 | 단일 클래스 실행 | `./gradlew test --tests '*UserLineParserTest'` |
 
@@ -20,9 +20,9 @@
 | 파싱 | `UserLineParserTest` (29) | 순수 단위 테스트 | 없음 |
 | 적재 | `UserFileLoaderTest` (8) | 단위 + `@TempDir` 실제 파일 | 없음 |
 | 도메인·서비스 | `UserSnapshotTest` (3), `PageResultTest` (7), `UserServiceReloadTest` (2), `UserServiceConcurrencyTest` (1) | 단위 (객체 직접 조립) | 없음 |
-| 웹 슬라이스 | `ApiErrorResponseTest` (17) | `@WebMvcTest` + `UserService` 목 | 웹 계층만 |
+| 웹 슬라이스 | `ApiErrorResponseTest` (17), `StaticFrontendTest` (5) | `@WebMvcTest` + `UserService` 목 | 웹 계층만 |
 | API | `UserControllerTest` (14), `UserReloadApiTest` (4), `UserDataStartupWithoutFileTest` (1) | `@SpringBootTest` + MockMvc | 전체 |
-| 통합 | `UserApiIntegrationTest` (4) | `RANDOM_PORT` 실제 서버 + `RestClient` | 전체 + 내장 톰캣 |
+| 통합 | `UserApiIntegrationTest` (5) | `RANDOM_PORT` 실제 서버 + `RestClient` | 전체 + 내장 톰캣 |
 | 기동 | `UserApiApplicationTests` (1) | `@SpringBootTest` | 전체 |
 
 계층마다 도구를 다르게 쓴 이유:
@@ -187,7 +187,7 @@
 |---|---|---|
 | `startsWithEmptyData` | R-2 | 요구사항 A-8. 없는 경로로 기동해도 애플리케이션이 뜨고, 목록은 0건, `/parse-failures`의 `loadedAt`이 없음(적재된 적 없음 표시), 재적재는 500 `DATA_LOAD_FAILED` |
 
-### 3.11 `UserApiIntegrationTest` — 실제 서버 통합 (4건)
+### 3.11 `UserApiIntegrationTest` — 실제 서버 통합 (5건)
 
 `RANDOM_PORT`로 내장 서버를 띄우고 `RestClient`로 호출합니다. `exchange`를 써서 4xx/5xx도 예외 없이 상태와 본문을 검증합니다.
 
@@ -197,12 +197,25 @@
 | `searchesByKoreanName` | I-2 | 한글 검색어 `파이`가 URL 인코딩되어 전달되고 2건 모두 이름에 `파이` 포함 |
 | `returnsProblemDetailOverHttp` | I-3 | 404(`USER_NOT_FOUND`, `instance` 경로 포함)가 `application/problem+json`. 400 `INVALID_PARAMETER`, 없는 경로 404 `NOT_FOUND`, 405 `METHOD_NOT_ALLOWED` |
 | `reloadLifecycle` | I-4 | 한 시나리오로 전체 흐름: ① 기동 시 실패 3건(16·31·39) ② 행 추가 후 재적재 38건 반영 ③ 파일 삭제 시 500, 응답에 서버 경로 미노출, 기존 38건 유지 ④ 파일 복구 후 재적재 37건 |
+| `servesFrontendAtRoot` | I-5 | 실제 서버에서 `/`가 200 `text/html`로 프론트엔드 화면(`index.html`)을 제공. MockMvc는 welcome page의 forward를 실행하지 않아 실제 서버로 확인 |
 
 ### 3.12 `UserApiApplicationTests` — 기동 (1건)
 
 | 메서드 | 검증 내용 |
 |---|---|
 | `contextLoads` | 기본 설정으로 애플리케이션 컨텍스트가 뜹니다 (빈 구성 오류 검출) |
+
+### 3.13 `StaticFrontendTest` — 프론트엔드 정적 리소스 (5건)
+
+`@WebMvcTest(UserController.class)` + `@MockitoBean UserService`. 화면 설계는 [`11-frontend-design.md`](11-frontend-design.md)이고, 화면 동작은 그 문서 8절의 수동 시나리오(F-1~F-12)로 확인합니다.
+
+| 메서드 | 계획 | 검증 내용 |
+|---|---|---|
+| `rootForwardsToIndex` | FE-1 | `/`가 `index.html`로 forward (스프링 부트 welcome page) |
+| `servesIndexWithCsp` | FE-2 | `index.html`이 `text/html`이고 `meta charset`, 제목, CSP `default-src 'self'`, `app.js` 포함. 정적 리소스 응답에 charset이 없어 본문을 UTF-8로 읽음 |
+| `servesAssets` | FE-3 | `app.js`는 `text/javascript`, `app.css`는 `text/css` |
+| `scriptDoesNotUseInnerHtml` | FE-4 | `app.js`에 `innerHTML`·`insertAdjacentHTML`이 없고 `textContent`를 씀. 데이터 파일 원문(`rawLine`, 이름)의 HTML이 해석되지 않도록 하는 규칙을 고정 |
+| `missingAssetKeepsProblemDetail` | FE-5 | 정적 리소스를 추가해도 없는 파일은 기존과 같은 404 `NOT_FOUND` ProblemDetail |
 
 ## 4. 요구사항 추적
 
@@ -231,6 +244,7 @@
 | A-8 파일 없어도 기동 | R-2 |
 | A-9 page 0부터, 기본 10, 최대 100 | API-1, API-3 |
 | A-10 ID 오름차순 | API-1, `pagesCoverAllUsersWithoutGapOrDuplicate`, R-4 `sortsByIdAndIndexes` |
+| 프론트엔드 (11-frontend-design) | FE-1~FE-5, I-5. 화면 동작은 수동 시나리오 F-1~F-12 |
 
 ## 5. 테스트하지 않은 것
 
@@ -243,6 +257,7 @@
 | 파일 읽기 권한 없음 | 03 4.2 | 파일 없음·비 UTF-8과 같은 `IOException` 경로. OS·실행 사용자(root)에 따라 결과가 달라 불안정 | 낮음 |
 | `GET /api/users/reload`가 405가 아닌 400 | 03 6.1 (5) | 알려진 부수 동작이며 바꿀 계획이 없음 | 낮음 |
 | 415 등 그 밖의 스프링 표준 예외 | 03 6 | 406 한 건으로 공통 보정(`handleExceptionInternal`) 경로를 대표 | 낮음 |
+| 화면 동작 (검색·페이징·상세·탭·재적재 후 페이지 보정·에러 표시) | 11 4·5절 | JS 테스트 도구는 Node 툴체인을 끌어옴. 수동 시나리오 F-1~F-12로 확인하고 결과를 11 8.1에 기록 | 화면 로직이 커지면 Playwright 등 E2E 도입 |
 | 재적재 중 파일이 쓰이는 경우의 부분 적재 (빈 파일·헤더만 있는 파일은 R-6에서 검증) | 03 6.1 (1) | 타이밍 재현이 어렵고, 해결책은 쓰기 측 규약(rename)이라 이 코드의 테스트 대상이 아님 | 해당 없음 |
 
 ## 6. 테스트를 추가할 때

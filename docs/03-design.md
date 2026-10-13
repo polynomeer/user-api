@@ -155,6 +155,10 @@ user-api:
 }
 ```
 
+### 5.1 프론트엔드
+
+`src/main/resources/static`의 `index.html`·`app.css`·`app.js`를 스프링 부트가 `/`에서 제공합니다 (welcome page). API와 같은 출처라 CORS 설정이 없고, 화면은 위 API 5종만 호출합니다. 화면 구성·에러 표시·보안 규칙은 [`11-frontend-design.md`](11-frontend-design.md)를 따릅니다.
+
 ## 6. 예외 처리 매트릭스
 
 | 상황 | 발생 위치 | 처리 | HTTP |
