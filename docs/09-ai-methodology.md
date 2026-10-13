@@ -55,6 +55,7 @@ AI를 그냥 대화 상대로 쓰지 않고, 세 층으로 감싸서 썼습니�
 | 권한 `deny: git push --force`, `git add -f` | 이력 파괴, ignore된 과제 원본 커밋 방지 | 거부 |
 | 권한 `allow: gradlew, curl, git 조회·커밋` | 반복 확인 프롬프트 제거 (시간 절약) | - |
 | `commit-msg` 훅 | 커밋 바디 필수 섹션(변경 내용·이유·검증) | 커밋 거부 |
+| `pre-commit` 훅 + 권한 `deny: git push origin main` + GitHub 브랜치 보호 | main은 PR로만 변경. 로컬 커밋·AI의 push·원격 직접 push를 각각 막아 한 층이 뚫려도 다음 층에서 막힘 | 커밋 거부 / 도구 호출 거부 / push 거부 |
 | `Stop` 훅 (`test-gate.sh`) | 프로덕션 코드(`src/main`, 빌드 설정)가 바뀐 상태로 테스트가 실패하면 작업을 끝낼 수 없음. 테스트만 추가한 TDD Red 단계는 허용 | 종료를 막고 실패 로그를 AI에 돌려줌 |
 | `.gitignore` | 과제 원본 pdf/png를 공개 레포에서 제외 | 추적 안 됨 |
 | `.gitattributes: user.txt -text` | git의 줄바꿈 변환으로 테스트 데이터가 바뀌는 것 방지 | - |
