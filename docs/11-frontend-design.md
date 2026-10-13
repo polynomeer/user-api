@@ -132,7 +132,7 @@ const state = { tab: 'users', keyword: '', page: 0, size: 10 };
 | 정적 리소스 제공 | `StaticFrontendTest` FE-1~FE-5 (`@WebMvcTest`): `/` → `index.html` 연결, CSP·스크립트 포함, JS·CSS `Content-Type`, `innerHTML` 미사용, 없는 파일은 기존 404 `NOT_FOUND`. `UserApiIntegrationTest` I-5: 실제 서버에서 `/`가 화면 제공 |
 | 화면 동작 | 브라우저에서 시나리오 수동 확인 (아래 표). JS 테스트 도구는 Node 툴체인을 끌어오므로 두지 않습니다 |
 
-수동 확인 시나리오:
+수동 확인 시나리오 (실행 방법·단계별 절차·스크린샷은 [`12-ui-test-guide.md`](12-ui-test-guide.md)):
 
 | # | 시나리오 | 기대 |
 |---|---|---|

@@ -207,7 +207,7 @@
 
 ### 3.13 `StaticFrontendTest` — 프론트엔드 정적 리소스 (5건)
 
-`@WebMvcTest(UserController.class)` + `@MockitoBean UserService`. 화면 설계는 [`11-frontend-design.md`](11-frontend-design.md)이고, 화면 동작은 그 문서 8절의 수동 시나리오(F-1~F-16)로 확인합니다.
+`@WebMvcTest(UserController.class)` + `@MockitoBean UserService`. 화면 설계는 [`11-frontend-design.md`](11-frontend-design.md)이고, 화면 동작은 그 문서 8절의 수동 시나리오(F-1~F-16)로 확인하며, 실행 절차와 스크린샷은 [`12-ui-test-guide.md`](12-ui-test-guide.md)에 있습니다.
 
 | 메서드 | 계획 | 검증 내용 |
 |---|---|---|

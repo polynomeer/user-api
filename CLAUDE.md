@@ -10,7 +10,7 @@ JAVA 코딩테스트(제한 90분). `user.txt`를 기동 시 메모리에 적재
 - 데이터 특이사항: `docs/04-data-analysis.md` (CRLF, 마지막 행 개행 없음, 오류 행 16·31·39)
 - 테스트 케이스: `docs/05-test-plan.md` (계획·이력), `docs/10-test-catalog.md` (현재 전체 목록·요구사항 추적. 테스트 추가 시 갱신)
 - 기술 선택 근거: `docs/07-tech-decisions.md` (대안·판단 기준·재검토 조건)
-- 프론트엔드: `docs/11-frontend-design.md` (`src/main/resources/static`, 데이터는 `textContent`로만 렌더링)
+- 프론트엔드: `docs/11-frontend-design.md` (`src/main/resources/static`, 데이터는 `textContent`로만 렌더링), 화면 테스트 절차·스크린샷 `docs/12-ui-test-guide.md` (화면을 바꾸면 스크린샷도 갱신)
 - 진행 기록: `docs/08-process-log.md` (단계별 타임라인·판단·AI 활용·회고)
 
 ## 명령어
