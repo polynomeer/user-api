@@ -1,7 +1,11 @@
 // 사용자 데이터 콘솔. 화면 상태는 state 하나로 관리하고, 서버 데이터는 캐시하지 않고 필요할 때 다시 조회한다.
 // 데이터는 항상 textContent로 렌더링한다 (파싱 실패의 원본 행은 파일 원문이라 임의의 문자열일 수 있다).
 
-const state = { tab: 'users', keyword: '', page: 0, size: 10 };
+const PAGE_SIZES = [10, 20, 50, 100];
+const MAX_PAGE = 2 ** 31 - 1; // 서버의 page는 int
+const DEFAULT_STATE = Object.freeze({ tab: 'users', keyword: '', page: 0, size: 10 });
+
+const state = { ...DEFAULT_STATE };
 
 const $ = (id) => document.getElementById(id);
 const salaryFormat = new Intl.NumberFormat('ko-KR');
@@ -100,6 +104,7 @@ async function loadUsers() {
 		// 재적재로 데이터가 줄어 현재 페이지가 범위를 벗어나면 마지막 페이지로 옮긴다
 		if (result.content.length === 0 && state.page > 0 && result.totalPages > 0) {
 			state.page = result.totalPages - 1;
+			syncUrl('replace');
 			return loadUsers();
 		}
 		renderUsers(result);
@@ -230,16 +235,80 @@ async function reload() {
 	}
 }
 
+// ---------- URL 상태 ----------
+// 화면 상태를 쿼리(?tab=&name=&page=&size=)에 남겨 새로고침·뒤로 가기·링크 공유 후에도 같은 화면을 보여 준다.
+// page는 API와 같은 0부터 시작하는 번호다. 기본값인 항목은 URL에서 생략한다.
+
+function readStateFromUrl() {
+	const params = new URLSearchParams(location.search);
+	const page = Number(params.get('page'));
+	const size = Number(params.get('size'));
+	return {
+		tab: params.get('tab') === 'failures' ? 'failures' : 'users',
+		keyword: (params.get('name') ?? '').trim(),
+		page: Number.isInteger(page) && page >= 0 && page <= MAX_PAGE ? page : DEFAULT_STATE.page,
+		size: PAGE_SIZES.includes(size) ? size : DEFAULT_STATE.size,
+	};
+}
+
+function urlFor(current) {
+	const params = new URLSearchParams();
+	if (current.tab !== DEFAULT_STATE.tab) {
+		params.set('tab', current.tab);
+	}
+	if (current.keyword) {
+		params.set('name', current.keyword);
+	}
+	if (current.page !== DEFAULT_STATE.page) {
+		params.set('page', current.page);
+	}
+	if (current.size !== DEFAULT_STATE.size) {
+		params.set('size', current.size);
+	}
+	const query = params.toString();
+	return query ? `${location.pathname}?${query}` : location.pathname;
+}
+
+/** 사용자 조작은 'push'(뒤로 가기 대상), 잘못된 값 보정·페이지 이동 보정은 'replace'로 기록한다. */
+function syncUrl(mode) {
+	const url = urlFor(state);
+	if (url === location.pathname + location.search) {
+		return;
+	}
+	if (mode === 'push') {
+		history.pushState(null, '', url);
+	} else {
+		history.replaceState(null, '', url);
+	}
+}
+
+/** 상태를 입력 컨트롤(검색어, 페이지 크기, 탭)에 반영한다. URL에서 상태를 읽은 직후에 호출한다. */
+function applyStateToControls() {
+	$('keyword').value = state.keyword;
+	$('size').value = String(state.size);
+	showTab(state.tab);
+}
+
 // ---------- 탭 ----------
 
-function selectTab(tab) {
-	state.tab = tab;
-	clearMessage();
+function showTab(tab) {
 	$('tab-users').setAttribute('aria-selected', String(tab === 'users'));
 	$('tab-failures').setAttribute('aria-selected', String(tab === 'failures'));
 	$('panel-users').hidden = tab !== 'users';
 	$('panel-failures').hidden = tab !== 'failures';
-	return tab === 'users' ? loadUsers() : loadFailures();
+}
+
+function loadCurrentTab() {
+	return state.tab === 'users' ? loadUsers() : loadFailures();
+}
+
+/** 사용자 조작으로 상태를 바꾸고, URL에 기록한 뒤 화면을 다시 조회한다. */
+function navigate(changes) {
+	Object.assign(state, changes);
+	clearMessage();
+	showTab(state.tab);
+	syncUrl('push');
+	return loadCurrentTab();
 }
 
 // ---------- 이벤트 연결 ----------
@@ -247,35 +316,19 @@ function selectTab(tab) {
 function bindEvents() {
 	$('search-form').addEventListener('submit', (event) => {
 		event.preventDefault();
-		state.keyword = $('keyword').value.trim();
-		state.page = 0;
-		clearMessage();
-		loadUsers();
+		navigate({ keyword: $('keyword').value.trim(), page: 0 });
 	});
 	$('search-reset').addEventListener('click', () => {
 		$('keyword').value = '';
-		state.keyword = '';
-		state.page = 0;
-		clearMessage();
-		loadUsers();
+		navigate({ keyword: '', page: 0 });
 	});
 	$('id-form').addEventListener('submit', (event) => {
 		event.preventDefault();
 		showDetail($('user-id').value);
 	});
-	$('prev').addEventListener('click', () => {
-		state.page -= 1;
-		loadUsers();
-	});
-	$('next').addEventListener('click', () => {
-		state.page += 1;
-		loadUsers();
-	});
-	$('size').addEventListener('change', (event) => {
-		state.size = Number(event.target.value);
-		state.page = 0;
-		loadUsers();
-	});
+	$('prev').addEventListener('click', () => navigate({ page: state.page - 1 }));
+	$('next').addEventListener('click', () => navigate({ page: state.page + 1 }));
+	$('size').addEventListener('change', (event) => navigate({ size: Number(event.target.value), page: 0 }));
 	const tbody = $('user-table').tBodies[0];
 	tbody.addEventListener('click', (event) => {
 		const row = event.target.closest('tr[data-id]');
@@ -290,11 +343,27 @@ function bindEvents() {
 			showDetail(row.dataset.id);
 		}
 	});
-	$('tab-users').addEventListener('click', () => selectTab('users'));
-	$('tab-failures').addEventListener('click', () => selectTab('failures'));
+	$('tab-users').addEventListener('click', () => navigate({ tab: 'users' }));
+	$('tab-failures').addEventListener('click', () => navigate({ tab: 'failures' }));
 	$('reload').addEventListener('click', reload);
+	// 뒤로/앞으로 가기: URL에서 상태를 다시 읽어 그 화면을 보여 준다
+	window.addEventListener('popstate', () => {
+		Object.assign(state, readStateFromUrl());
+		applyStateToControls();
+		clearMessage();
+		loadCurrentTab();
+	});
 }
 
-bindEvents();
-loadUsers();
-loadFailures();
+function init() {
+	bindEvents();
+	Object.assign(state, readStateFromUrl());
+	applyStateToControls();
+	syncUrl('replace'); // 잘못된 값(size=7, page=-1 등)을 보정한 URL로 바꿔 둔다
+	loadCurrentTab();
+	if (state.tab === 'users') {
+		loadFailures(); // 헤더의 적재 상태와 실패 건수 표시용
+	}
+}
+
+init();

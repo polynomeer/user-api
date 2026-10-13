@@ -207,7 +207,7 @@
 
 ### 3.13 `StaticFrontendTest` — 프론트엔드 정적 리소스 (5건)
 
-`@WebMvcTest(UserController.class)` + `@MockitoBean UserService`. 화면 설계는 [`11-frontend-design.md`](11-frontend-design.md)이고, 화면 동작은 그 문서 8절의 수동 시나리오(F-1~F-12)로 확인합니다.
+`@WebMvcTest(UserController.class)` + `@MockitoBean UserService`. 화면 설계는 [`11-frontend-design.md`](11-frontend-design.md)이고, 화면 동작은 그 문서 8절의 수동 시나리오(F-1~F-16)로 확인합니다.
 
 | 메서드 | 계획 | 검증 내용 |
 |---|---|---|
@@ -244,7 +244,7 @@
 | A-8 파일 없어도 기동 | R-2 |
 | A-9 page 0부터, 기본 10, 최대 100 | API-1, API-3 |
 | A-10 ID 오름차순 | API-1, `pagesCoverAllUsersWithoutGapOrDuplicate`, R-4 `sortsByIdAndIndexes` |
-| 프론트엔드 (11-frontend-design) | FE-1~FE-5, I-5. 화면 동작은 수동 시나리오 F-1~F-12 |
+| 프론트엔드 (11-frontend-design) | FE-1~FE-5, I-5. 화면 동작은 수동 시나리오 F-1~F-16 |
 
 ## 5. 테스트하지 않은 것
 
@@ -257,7 +257,7 @@
 | 파일 읽기 권한 없음 | 03 4.2 | 파일 없음·비 UTF-8과 같은 `IOException` 경로. OS·실행 사용자(root)에 따라 결과가 달라 불안정 | 낮음 |
 | `GET /api/users/reload`가 405가 아닌 400 | 03 6.1 (5) | 알려진 부수 동작이며 바꿀 계획이 없음 | 낮음 |
 | 415 등 그 밖의 스프링 표준 예외 | 03 6 | 406 한 건으로 공통 보정(`handleExceptionInternal`) 경로를 대표 | 낮음 |
-| 화면 동작 (검색·페이징·상세·탭·재적재 후 페이지 보정·에러 표시) | 11 4·5절 | JS 테스트 도구는 Node 툴체인을 끌어옴. 수동 시나리오 F-1~F-12로 확인하고 결과를 11 8.1에 기록 | 화면 로직이 커지면 Playwright 등 E2E 도입 |
+| 화면 동작 (검색·페이징·상세·탭·재적재 후 페이지 보정·URL 상태·에러 표시) | 11 4·5절 | JS 테스트 도구는 Node 툴체인을 끌어옴. 수동 시나리오 F-1~F-16으로 확인하고 결과를 11 8.1에 기록 | 화면 로직이 커지면 Playwright 등 E2E 도입 |
 | 재적재 중 파일이 쓰이는 경우의 부분 적재 (빈 파일·헤더만 있는 파일은 R-6에서 검증) | 03 6.1 (1) | 타이밍 재현이 어렵고, 해결책은 쓰기 측 규약(rename)이라 이 코드의 테스트 대상이 아님 | 해당 없음 |
 
 ## 6. 테스트를 추가할 때

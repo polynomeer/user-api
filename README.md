@@ -10,7 +10,7 @@
 | 샘플 데이터 | **성공 37건 / 실패 3건** — 실패 행은 WARN 로그로 남기고 API로 따로 조회할 수 있음 |
 | 에러 처리 | 모든 에러가 같은 형식(`ProblemDetail` + `code` + 한글 `detail`). 재적재가 실패해도 **기존 데이터 유지** |
 | 동시성 | 재적재 중 조회해도 **반쯤 갱신된 데이터가 보이지 않음** (불변 스냅샷 통째 교체) |
-| 화면 | `http://localhost:8080/`에서 목록·검색·상세·파싱 실패·재적재를 브라우저로 확인 ([설계](docs/11-frontend-design.md)) |
+| 화면 | `http://localhost:8080/`에서 목록·검색·상세·파싱 실패·재적재를 브라우저로 확인. 검색어·페이지·탭이 URL에 남아 새로고침·뒤로 가기·링크 공유 가능 ([설계](docs/11-frontend-design.md)) |
 | 테스트 | **97건 통과**, 라인 커버리지 99% (195/197), 분기 89% (50/56) |
 | 환경 | JDK 21, Spring Boot 4.1.1 (Web MVC, Validation) — Gradle wrapper 포함 |
 
@@ -226,7 +226,7 @@ com.whatap.userapi
 | 재적재 | `UserReloadApiTest` (4), `UserServiceReloadTest` (2) | 파일 변경 반영, 실패 시 500 + 기존 데이터 유지, 빈 파일은 0건으로 교체 |
 | 동시성 | `UserServiceConcurrencyTest` (1) | 재적재 200회 동안 4개 스레드가 조회해도 반쯤 갱신된 상태가 보이지 않음 (일부러 결함을 넣어 테스트가 잡아내는지 확인함) |
 | 통합 | `UserApiIntegrationTest` (5) | 실제 서버에서 HTTP로 기동 → 조회 → 변경 → 재적재 → 실패 → 복구 전체 흐름, `/`에서 화면 제공 |
-| 화면 | `StaticFrontendTest` (5) | 정적 리소스 제공, CSP, 데이터를 `innerHTML`로 그리지 않음. 화면 동작은 수동 시나리오 12개 ([11-frontend-design 8절](docs/11-frontend-design.md)) |
+| 화면 | `StaticFrontendTest` (5) | 정적 리소스 제공, CSP, 데이터를 `innerHTML`로 그리지 않음. 화면 동작은 수동 시나리오 16개 ([11-frontend-design 8절](docs/11-frontend-design.md)) |
 | 기타 | `UserDataStartupWithoutFileTest` (1), `PageResultTest` (7), `UserSnapshotTest` (3), `contextLoads` (1) | 파일 없이 기동, 페이징 경계, 정렬·불변성 |
 
 과제 API 5종 × 정상/경계/오류 커버리지 대조표: [docs/05-test-plan.md 7절](docs/05-test-plan.md) · 전체 테스트 목록과 요구사항 추적: [docs/10-test-catalog.md](docs/10-test-catalog.md)
