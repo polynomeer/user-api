@@ -118,4 +118,4 @@ MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 �
 | FE-4 | `scriptDoesNotUseInnerHtml` | 데이터를 `innerHTML`로 렌더링하지 않음 |
 | FE-5 | `missingAssetKeepsProblemDetail` | 없는 정적 파일은 기존 404 `NOT_FOUND` |
 | I-5 | `servesFrontendAtRoot` | 실제 서버에서 `/`가 화면 제공 |
-| F-1~F-16 | 수동 (11 8절) | 목록·검색·상세·탭·재적재·에러 표시·HTML 주입·모바일 폭·미적재 경고·페이지 보정·URL 상태(직접 접속·뒤로 가기·잘못된 값 보정) |
+| F-1~F-17 | 수동 (11 8절) | 목록·검색·상세·탭·재적재·에러 표시·HTML 주입·모바일 폭·미적재 경고·페이지 보정·URL 상태(직접 접속·뒤로 가기·잘못된 값 보정) |

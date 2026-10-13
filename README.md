@@ -226,7 +226,7 @@ com.whatap.userapi
 | 재적재 | `UserReloadApiTest` (4), `UserServiceReloadTest` (2) | 파일 변경 반영, 실패 시 500 + 기존 데이터 유지, 빈 파일은 0건으로 교체 |
 | 동시성 | `UserServiceConcurrencyTest` (1) | 재적재 200회 동안 4개 스레드가 조회해도 반쯤 갱신된 상태가 보이지 않음 (일부러 결함을 넣어 테스트가 잡아내는지 확인함) |
 | 통합 | `UserApiIntegrationTest` (5) | 실제 서버에서 HTTP로 기동 → 조회 → 변경 → 재적재 → 실패 → 복구 전체 흐름, `/`에서 화면 제공 |
-| 화면 | `StaticFrontendTest` (5) | 정적 리소스 제공, CSP, 데이터를 `innerHTML`로 그리지 않음. 화면 동작은 수동 시나리오 16개 ([실행 가이드와 스크린샷](docs/12-ui-test-guide.md)) |
+| 화면 | `StaticFrontendTest` (5) | 정적 리소스 제공, CSP, 데이터를 `innerHTML`로 그리지 않음. 화면 동작은 수동 시나리오 17개 ([실행 가이드와 스크린샷](docs/12-ui-test-guide.md)) |
 | 기타 | `UserDataStartupWithoutFileTest` (1), `PageResultTest` (7), `UserSnapshotTest` (3), `contextLoads` (1) | 파일 없이 기동, 페이징 경계, 정렬·불변성 |
 
 과제 API 5종 × 정상/경계/오류 커버리지 대조표: [docs/05-test-plan.md 7절](docs/05-test-plan.md) · 전체 테스트 목록과 요구사항 추적: [docs/10-test-catalog.md](docs/10-test-catalog.md)
@@ -276,5 +276,5 @@ git log --reverse --format='%h %s'    # 단계별 진행 이력
 | [09-ai-methodology](docs/09-ai-methodology.md) | AI 활용 방법론 |
 | [10-test-catalog](docs/10-test-catalog.md) | 테스트 전체 목록, 요구사항 추적, 테스트하지 않은 것 |
 | [11-frontend-design](docs/11-frontend-design.md) | 프론트엔드 화면 구성, API 연동, 에러 표시, 보안, 수동 확인 결과 |
-| [12-ui-test-guide](docs/12-ui-test-guide.md) | 화면 테스트 가이드: 실행 방법, 시나리오 16개의 절차·기대 결과·스크린샷 |
+| [12-ui-test-guide](docs/12-ui-test-guide.md) | 화면 테스트 가이드: 실행 방법, 시나리오 17개의 절차·기대 결과·스크린샷 |
 | [AI_USAGE](docs/AI_USAGE.md) | 단계별 AI 활용 내역 |

@@ -2,8 +2,9 @@
 // 데이터는 항상 textContent로 렌더링한다 (파싱 실패의 원본 행은 파일 원문이라 임의의 문자열일 수 있다).
 
 const PAGE_SIZES = [10, 20, 50, 100];
-const MAX_PAGE = 2 ** 31 - 1; // 서버의 page는 int
-const DEFAULT_STATE = Object.freeze({ tab: 'users', keyword: '', page: 0, size: 10 });
+const MAX_INT = 2 ** 31 - 1; // 서버의 page·id는 int
+// 목록은 전체·이름 검색·ID 조회 중 하나다. keyword와 id는 동시에 쓰지 않는다
+const DEFAULT_STATE = Object.freeze({ tab: 'users', keyword: '', id: null, page: 0, size: 10 });
 
 const state = { ...DEFAULT_STATE };
 
@@ -87,6 +88,9 @@ function formatInstant(iso) {
 let listRequestSeq = 0;
 
 async function loadUsers() {
+	if (state.id !== null) {
+		return loadUserById();
+	}
 	const seq = ++listRequestSeq;
 	const params = new URLSearchParams({ page: state.page, size: state.size });
 	let path = '/api/users';
@@ -119,6 +123,40 @@ async function loadUsers() {
 	}
 }
 
+/** ID 조회 결과를 이름 검색과 같은 표·페이지 형태로 보여 준다 (0건 또는 1건). */
+async function loadUserById() {
+	const seq = ++listRequestSeq;
+	const id = state.id;
+	const table = $('user-table');
+	table.setAttribute('aria-busy', 'true');
+	try {
+		const user = await api(`/api/users/${id}`);
+		if (seq !== listRequestSeq) {
+			return;
+		}
+		renderUsers({ content: [user], page: 0, totalElements: 1, totalPages: 1 });
+		renderDetail(user);
+	} catch (error) {
+		if (seq !== listRequestSeq) {
+			return;
+		}
+		renderUsers({ content: [], page: 0, totalElements: 0, totalPages: 0 });
+		renderDetail(null);
+		showError(error);
+	} finally {
+		if (seq === listRequestSeq) {
+			table.removeAttribute('aria-busy');
+		}
+	}
+}
+
+function listCaption(totalElements) {
+	if (state.id !== null) {
+		return `ID ${state.id} 조회 결과 ${totalElements}건`;
+	}
+	return state.keyword ? `'${state.keyword}' 검색 결과 ${totalElements}건` : `전체 ${totalElements}건`;
+}
+
 function renderUsers(result) {
 	const tbody = $('user-table').tBodies[0];
 	if (result.content.length === 0) {
@@ -126,9 +164,7 @@ function renderUsers(result) {
 	} else {
 		tbody.replaceChildren(...result.content.map(userRow));
 	}
-	$('list-caption').textContent = state.keyword
-		? `'${state.keyword}' 검색 결과 ${result.totalElements}건`
-		: `전체 ${result.totalElements}건`;
+	$('list-caption').textContent = listCaption(result.totalElements);
 	const totalPages = Math.max(result.totalPages, 1);
 	$('page-info').textContent = `${result.page + 1} / ${totalPages} 페이지`;
 	$('prev').disabled = result.page <= 0;
@@ -239,14 +275,23 @@ async function reload() {
 // 화면 상태를 쿼리(?tab=&name=&page=&size=)에 남겨 새로고침·뒤로 가기·링크 공유 후에도 같은 화면을 보여 준다.
 // page는 API와 같은 0부터 시작하는 번호다. 기본값인 항목은 URL에서 생략한다.
 
+/** 1 이상 int 범위의 정수면 숫자로, 아니면 null을 돌려준다. */
+function parseId(text) {
+	const id = Number(text);
+	return text && Number.isInteger(id) && id >= 1 && id <= MAX_INT ? id : null;
+}
+
 function readStateFromUrl() {
 	const params = new URLSearchParams(location.search);
 	const page = Number(params.get('page'));
 	const size = Number(params.get('size'));
+	const id = parseId(params.get('id'));
 	return {
 		tab: params.get('tab') === 'failures' ? 'failures' : 'users',
-		keyword: (params.get('name') ?? '').trim(),
-		page: Number.isInteger(page) && page >= 0 && page <= MAX_PAGE ? page : DEFAULT_STATE.page,
+		// ID 조회가 있으면 검색어·페이지는 쓰지 않는다
+		keyword: id !== null ? '' : (params.get('name') ?? '').trim(),
+		id,
+		page: id === null && Number.isInteger(page) && page >= 0 && page <= MAX_INT ? page : DEFAULT_STATE.page,
 		size: PAGE_SIZES.includes(size) ? size : DEFAULT_STATE.size,
 	};
 }
@@ -258,6 +303,9 @@ function urlFor(current) {
 	}
 	if (current.keyword) {
 		params.set('name', current.keyword);
+	}
+	if (current.id !== null) {
+		params.set('id', current.id);
 	}
 	if (current.page !== DEFAULT_STATE.page) {
 		params.set('page', current.page);
@@ -285,6 +333,7 @@ function syncUrl(mode) {
 /** 상태를 입력 컨트롤(검색어, 페이지 크기, 탭)에 반영한다. URL에서 상태를 읽은 직후에 호출한다. */
 function applyStateToControls() {
 	$('keyword').value = state.keyword;
+	$('user-id').value = state.id ?? '';
 	$('size').value = String(state.size);
 	showTab(state.tab);
 }
@@ -316,15 +365,19 @@ function navigate(changes) {
 function bindEvents() {
 	$('search-form').addEventListener('submit', (event) => {
 		event.preventDefault();
-		navigate({ keyword: $('keyword').value.trim(), page: 0 });
+		$('user-id').value = '';
+		navigate({ keyword: $('keyword').value.trim(), id: null, page: 0 });
 	});
 	$('search-reset').addEventListener('click', () => {
 		$('keyword').value = '';
-		navigate({ keyword: '', page: 0 });
+		$('user-id').value = '';
+		navigate({ keyword: '', id: null, page: 0 });
 	});
+	// 입력 범위(1 이상 int 이하 정수)는 input의 min·max·step으로 브라우저가 먼저 막는다
 	$('id-form').addEventListener('submit', (event) => {
 		event.preventDefault();
-		showDetail($('user-id').value);
+		$('keyword').value = '';
+		navigate({ id: parseId($('user-id').value), keyword: '', page: 0 });
 	});
 	$('prev').addEventListener('click', () => navigate({ page: state.page - 1 }));
 	$('next').addEventListener('click', () => navigate({ page: state.page + 1 }));
