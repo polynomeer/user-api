@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
@@ -141,6 +142,16 @@ class UserApiIntegrationTest {
 		assertThat(recovered.status()).isEqualTo(200);
 		assertThat(recovered.body().get("successCount").asInt()).isEqualTo(37);
 		assertThat(call(HttpMethod.GET, "/api/users/1041").status()).isEqualTo(404);
+	}
+
+	@Test
+	@DisplayName("I-5: 실제 서버에서 루트 경로가 프론트엔드 화면(index.html)을 제공한다")
+	void servesFrontendAtRoot() {
+		ResponseEntity<String> page = client.get().uri("/").retrieve().toEntity(String.class);
+
+		assertThat(page.getStatusCode().value()).isEqualTo(200);
+		assertThat(page.getHeaders().getContentType().isCompatibleWith(MediaType.TEXT_HTML)).isTrue();
+		assertThat(page.getBody()).contains("<title>사용자 데이터 콘솔</title>");
 	}
 
 	/**
