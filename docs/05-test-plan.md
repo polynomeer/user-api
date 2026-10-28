@@ -105,3 +105,17 @@ MockMvc 테스트는 서블릿 컨테이너를 거치지 않으므로, 실제 �
 | 파일 재읽기·메모리 갱신 | RA·IT-4 추가·삭제 반영, 응답 건수 | IT-4 실패 후 복구 재적재, R-1 재적재 중 조회 일관성 | RA·IT-4·SW 파일 없음 500 + 기존 데이터 유지, 경로 미노출 |
 
 굵게 표시한 항목은 이 대조 과정에서 빈틈으로 확인되어 추가한 테스트입니다.
+
+## 8. 프론트엔드 (`StaticFrontendTest`, `UserApiIntegrationTest#servesFrontendAtRoot`)
+
+설계: [`11-frontend-design.md`](11-frontend-design.md). 정적 리소스 제공과 보안 규칙은 자동 테스트로, 화면 동작은 수동 시나리오로 확인합니다.
+
+| # | 테스트 | 검증 내용 |
+|---|---|---|
+| FE-1 | `rootForwardsToIndex` | `/` → `index.html` |
+| FE-2 | `servesIndexWithCsp` | `text/html`, CSP `default-src 'self'`, 스크립트 포함 |
+| FE-3 | `servesAssets` | JS·CSS `Content-Type` |
+| FE-4 | `scriptDoesNotUseInnerHtml` | 데이터를 `innerHTML`로 렌더링하지 않음 |
+| FE-5 | `missingAssetKeepsProblemDetail` | 없는 정적 파일은 기존 404 `NOT_FOUND` |
+| I-5 | `servesFrontendAtRoot` | 실제 서버에서 `/`가 화면 제공 |
+| F-1~F-17 | 수동 (11 8절) | 목록·검색·상세·탭·재적재·에러 표시·HTML 주입·모바일 폭·미적재 경고·페이지 보정·URL 상태(직접 접속·뒤로 가기·잘못된 값 보정) |

@@ -165,6 +165,9 @@ AI가 규칙을 "지켜주길 바라는" 대신 도구가 강제하도록 Claude
 | 권한 allow | gradle·curl·git 명령 확인 생략 (시간 절약) |
 | Stop 훅 | 프로덕션 코드 변경 시 테스트 실패 상태로 작업 종료 불가 |
 | commit-msg 훅 (로컬) | 커밋 규칙 필수 섹션 누락 시 거부 |
+| pre-commit 훅 (로컬) | main 브랜치 직접 커밋 거부 (기능 브랜치 + PR로만 병합) |
+| 권한 deny (main push) | AI의 `git push origin main` 계열 명령 차단 |
+| GitHub 브랜치 보호 | 원격 main: PR 필수(승인 0명), 관리자 포함 적용, force push·삭제 금지 |
 | `spec-reviewer` | 커밋 전 요구사항·설계 대조 (읽기 전용) |
 | `test-planner` | 테스트 계획 대비 누락 케이스 탐지 (읽기 전용) |
 | `submit-checker` | 제출 체크리스트 실행 (읽기 전용) |

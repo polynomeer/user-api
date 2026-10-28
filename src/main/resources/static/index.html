@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+	<title>사용자 데이터 콘솔</title>
+	<link rel="stylesheet" href="app.css">
+	<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="top">
+	<h1>사용자 데이터 콘솔</h1>
+	<div class="load-status">
+		<span id="load-status" class="status">적재 상태 확인 중</span>
+		<button id="reload" type="button">재적재</button>
+	</div>
+</header>
+
+<main>
+	<p id="message" class="message" role="status" aria-live="polite" hidden></p>
+
+	<nav class="tabs" role="tablist" aria-label="화면 선택">
+		<button id="tab-users" role="tab" type="button" aria-selected="true" aria-controls="panel-users">사용자</button>
+		<button id="tab-failures" role="tab" type="button" aria-selected="false" aria-controls="panel-failures">
+			파싱 실패 <span id="failure-count" class="badge"></span>
+		</button>
+	</nav>
+
+	<section id="panel-users" role="tabpanel" aria-labelledby="tab-users">
+		<div class="toolbar">
+			<form id="search-form" class="inline-form">
+				<label for="keyword">이름</label>
+				<input id="keyword" name="keyword" type="search" autocomplete="off" placeholder="이름에 포함된 문자열">
+				<button type="submit">검색</button>
+				<button id="search-reset" type="button" class="secondary">초기화</button>
+			</form>
+			<form id="id-form" class="inline-form">
+				<label for="user-id">ID</label>
+				<input id="user-id" name="id" type="number" min="1" max="2147483647" step="1" inputmode="numeric" required>
+				<button type="submit">조회</button>
+			</form>
+		</div>
+
+		<div class="content">
+			<div class="table-area">
+				<p id="list-caption" class="caption"></p>
+				<div class="table-scroll">
+					<table id="user-table">
+						<thead>
+						<tr>
+							<th scope="col" class="num">ID</th>
+							<th scope="col">이름</th>
+							<th scope="col" class="num">나이</th>
+							<th scope="col">성별</th>
+							<th scope="col" class="num">연봉</th>
+						</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
+				<div class="pager">
+					<button id="prev" type="button" class="secondary">이전</button>
+					<span id="page-info"></span>
+					<button id="next" type="button" class="secondary">다음</button>
+					<label for="size">페이지 크기</label>
+					<select id="size">
+						<option>10</option>
+						<option>20</option>
+						<option>50</option>
+						<option>100</option>
+					</select>
+				</div>
+			</div>
+
+			<aside class="detail" aria-labelledby="detail-title">
+				<h2 id="detail-title">상세</h2>
+				<p id="detail-empty" class="muted">ID를 조회하거나 표에서 행을 선택하세요.</p>
+				<dl id="detail" hidden>
+					<dt>ID</dt><dd data-field="id"></dd>
+					<dt>이름</dt><dd data-field="name"></dd>
+					<dt>나이</dt><dd data-field="age"></dd>
+					<dt>성별</dt><dd data-field="gender"></dd>
+					<dt>연봉</dt><dd data-field="salary"></dd>
+				</dl>
+			</aside>
+		</div>
+	</section>
+
+	<section id="panel-failures" role="tabpanel" aria-labelledby="tab-failures" hidden>
+		<p id="failure-caption" class="caption"></p>
+		<div class="table-scroll">
+			<table id="failure-table">
+				<thead>
+				<tr>
+					<th scope="col" class="num">행</th>
+					<th scope="col">에러 코드</th>
+					<th scope="col">사유</th>
+					<th scope="col">원본 행</th>
+				</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+	</section>
+</main>
+</body>
+</html>
